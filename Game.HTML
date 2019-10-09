@@ -211,7 +211,7 @@
         }
         request.send();
 
-        const drag = 0.005,
+        const drag = 0.02,
             maxThrust = 0.4,
             rotationSpeed = 0.002,
             brakingForce = 0.05,
@@ -468,7 +468,7 @@
 
                 // If Dead
             } else {
-                kerb.texture = id["Space Tilesheet 26.aseprite"];
+                animate(kerb, "KIA");
                 animate(rocket, "Explosion");
 
                 if (timeWarpIndex > 0) {
