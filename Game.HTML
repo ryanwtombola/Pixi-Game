@@ -236,8 +236,6 @@
             // Create an alias called id for all the textures
             id = resources["Assets/space-spritesheet.json"].textures;
 
-            console.log(json.meta.frameTags.find(x => x.name === 'Explosion').to);
-
             let style = new TextStyle({
                 fontFamily: "Arial",
                 fontSize: 36,
@@ -270,7 +268,6 @@
             planet.scale.set(10);
             app.stage.addChild(planet);
             planet.radius = planet.width / 2;
-            console.log(planet.radius);
 
             explosionTextures = [];
             for (let i = 4; i < 15; i++) {
@@ -284,6 +281,8 @@
             position = new Vector(0, -(637100 + 100000));
             velocity = new Vector(1800 / 60, 0);
             rocket.rotation = Math.PI / 2;
+            rocket.frame = 0;
+            rocket.lastAnimation = "";
             angularVelocity = 0;
             app.stage.addChild(rocket);
 
@@ -404,9 +403,8 @@
 
         // -----------------------------------------------======== Play ========----------------------------------------------- //
 
-        let animationAmount = 0
-
         function Play(delta) {
+
             if (position.distance(planet) <= planet.radius) {
                 alive = false;
             }
@@ -436,7 +434,10 @@
                         velocity.x += Math.cos(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
                         velocity.y += Math.sin(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
                         fuel = clamp(fuel - thrust * delta, 0, maxFuel);
+                        animate(rocket, "Thrust", true);
                     }
+                } else {
+                    animate(rocket, "Idle", true);
                 }
                 if (down.isDown) {
                     angularVelocity *= (1 - brakingForce) / delta;
@@ -461,21 +462,13 @@
 
                 // If Dead
             } else {
-                kerb.texture = id["Space Tilesheet 26.aseprite"]
+                kerb.texture = id["Space Tilesheet 26.aseprite"];
+                animate(rocket, "Explosion");
 
                 if (timeWarpIndex > 0) {
                     timeWarpIndex = 0;
                     timeWarp = timeWarps[timeWarpIndex];
                     changeTimeWarpText(timeWarp + "x TimeWarp");
-                }
-
-                if (animationAmount <= explosionTextures.length) {
-                    let texture = explosionTextures[animationAmount - animationAmount % 1]
-                    rocket.texture = texture;
-                    animationAmount += 1 / (60 / 12) * delta;
-                } else {
-                    animationAmount = explosionTextures.length - 1;
-                    //animationAmount = 0;
                 }
             }
 
@@ -646,6 +639,26 @@
         function changeTimeWarpText(text) {
             timeWarpText.alpha = 4;
             timeWarpText.text = text;
+        }
+
+        function animate(object, animationName, loop = false, delta = 1) {
+            let animation = json.meta.frameTags.find(x => x.name === animationName);
+
+            if (object.lastAnimation !== animationName) {
+                object.frame = animation.from;
+                console.log("newAnim")
+            }
+
+            if (object.frame < animation.to + 1) {
+                console.log(object.frame - object.frame % 1);
+                object.texture = id["Space Tilesheet " + (object.frame - object.frame % 1) + ".aseprite"];
+                object.frame += 1 / (60 / 12) * delta;
+            } else if (loop) {
+                object.frame = animation.from;
+            } else {
+                object.frame = animation.to;
+            }
+            object.lastAnimation = animationName;
         }
     </script>
 </body>
