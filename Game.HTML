@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kerbz</title>
+    <script src="pixi.min.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            overflow: hidden
+        }
+    </style>
+    <!-- <script src="main.js" type="text/javascript"></script> -->
+    <script>
+        // -----------------------------------------------======== Classes ========----------------------------------------------- //
+
+        class Vector {
+            static zero = new Vector(0, 0);
+            static one = new Vector(1, 1);
+            static up = new Vector(0, 1);
+            static right = new Vector(1, 0);
+            static down = new Vector(0, -1);
+            static left = new Vector(-1, 0);
+
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+
+            // Returns the magnitude of the vector
+            magnitude() {
+                    return Math.sqrt(this.x * this.x + this.y * this.y);
+                }
+                // Returns the normalized vector (direction)
+            normalized() {
+                var magnitude = this.magnitude();
+                if (magnitude != 0)
+                    return new Vector(this.x / magnitude, this.y / magnitude);
+                else
+                    return 0;
+            }
+
+            // Caluclates the distance from one vector to another and returns a vector
+            distanceTo(target) {
+                    if (typeof target === 'object') {
+                        target = new Vector(target.x, target.y)
+                    }
+                    return new Vector(target.x - this.x, target.y - this.y)
+                }
+                // Calculates the direction to another vector and returns a normalized vector
+            directionTo(target) {
+                    if (typeof target === 'object') {
+                        target = new Vector(target.x, target.y)
+                    }
+                    return this.distanceTo(target).normalized();
+                }
+                // Returns the distace to the target as a float (non directional)
+            distance(target) {
+                if (typeof target === 'object') {
+                    target = new Vector(target.x, target.y)
+                }
+                return this.distanceTo(target).magnitude();
+            }
+
+            // Takes two vectors and returns their sum
+            add(value) {
+                    if (typeof value === 'number') {
+                        value = new Vector(value, value)
+                    }
+                    return new Vector(this.x + value.x, this.y + value.y);
+                }
+                // Takes two vectors and subtracts one from the other
+            subtract(value) {
+                    if (typeof value === 'number') {
+                        value = new Vector(value, value)
+                    }
+                    return new Vector(this.x - value.x, this.y - value.y);
+                }
+                // Takes two vectors and returns their product
+            multiply(value) {
+                    if (typeof value === 'number') {
+                        value = new Vector(value, value)
+                    }
+                    return new Vector(this.x * value.x, this.y * value.y);
+                }
+                // Divides a vetor by by another and returns a vector
+            divide(value) {
+                if (typeof value === 'number') {
+                    value = new Vector(value, value)
+                }
+                if (value.x != 0 && value.y != 0)
+                    return new Vector(this.x / value.x, this.y / value.y);
+                else
+                    return value.zero;
+            }
+
+            // Converts an angle in radians to a vector
+            radToVector(value) {
+                    return new Vector(Math.cos(value), Math.sin(value));
+                }
+                // Converts a vector to an angle in radians
+            toRad() {
+                return Math.atan2(this.x, this.y);
+            }
+            toVector(object) {
+                return new Vector(object.x, object.y);
+            }
+            toLocal() {
+                return this.add(new Vector(app.stage.pivot.x, app.stage.pivot.y))
+            }
+        }
+
+        class Line extends PIXI.Graphics {
+            constructor(points, lineSize, lineColor) {
+                super();
+
+                var s = this.lineWidth = lineSize || 5;
+                var c = this.lineColor = lineColor || "0x000000";
+
+                this.points = points;
+
+                this.lineStyle(s, c)
+
+                this.moveTo(points[0].x, points[0].y);
+                this.lineTo(points[1].x, points[1].y);
+            }
+
+            updatePoints(p) {
+                var points = this.points = p.map((val, index) => val || this.points[index]);
+
+                var s = this.lineWidth;
+                var c = this.lineColor;
+
+                this.clear();
+
+
+                for (let i = 0; i < points.length - 1; i++) {
+                    this.lineStyle(s, c, lerp(0.8, 0, i / (points.length - 1)));
+                    this.moveTo(points[i].x, points[i].y);
+                    this.lineTo(points[i + 1].x, points[i + 1].y);
+                }
+            }
+        }
+
+        // -----------------------------------------------======== PIXI ========----------------------------------------------- //
+
+        // Preserves pixels when upscaling
+        PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
+
+        // Aliases
+        let Application = PIXI.Application,
+            loader = PIXI.loader,
+            resources = PIXI.loader.resources,
+            Sprite = PIXI.Sprite,
+            Text = PIXI.Text,
+            TextStyle = PIXI.TextStyle;
+        Graphics = PIXI.Graphics;
+        Container = PIXI.Container;
+
+        // Create a Pixi Application
+        let app = new PIXI.Application({
+            width: window.innerWidth,
+            height: window.innerHeight,
+            antialias: true,
+            transparent: false,
+            resolution: 1,
+            forceFXAA: false,
+            roundPixels: true
+        });
+
+        // Add the canvas to the HTML document
+        document.body.appendChild(app.view);
+
+        // Resize the canvas to the full page
+        app.renderer.view.style.position = "absolute";
+        app.renderer.view.style.display = "block";
+        app.renderer.autoResize = true;
+        app.renderer.resize(window.innerWidth, window.innerHeight);
+
+
+
+        // Load an image and run the setup function when it's done
+        PIXI.loader
+            .add("Assets/space-spritesheet.json")
+            .load(setup);
+
+        let left = keyboard("a"),
+            right = keyboard("d"),
+            up = keyboard("w"),
+            down = keyboard("s");
+        keyM = keyboard("m");
+        comma = keyboard("q")
+        period = keyboard("e");
+
+        window.addEventListener("mousemove", e => {
+            worldMousePos = new Vector(e.clientX, e.clientY)
+        }, false);
+        window.addEventListener("wheel", event => zoom *= 1 + event.deltaY / 5000);
+
+        // -----------------------------------------------======== Setup ========----------------------------------------------- //
+
+        const drag = 0.005,
+            maxThrust = 0.4,
+            rotationSpeed = 0.002,
+            brakingForce = 0.05,
+            maxFuel = 2000;
+
+        var line, apoapsisIcon, periapsisIcon, heading, headingCircle, fuelBar;
+        var GUI, velocityText, altitudeText, fuelText, headingText, timeWarpText;
+        let state, rocket, alive = true,
+            explosionTextures, fuel = maxFuel,
+            thrust = maxThrust,
+            altitude, planet;
+        let position, velocity, angularVelocity, zoom = 0.2;
+        let worldMousePos = Vector.zero,
+            localMousePos = Vector.zero;
+        let timeWarp = 1,
+            timeWarpIndex = 0,
+            timeWarps = [1, 2, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000];
+
+        // This will run when the image has loaded
+        function setup() {
+
+            // Create an alias called id for all the textures
+            id = resources["Assets/space-spritesheet.json"].textures;
+
+            let style = new TextStyle({
+                fontFamily: "Arial",
+                fontSize: 36,
+                fill: "white"
+            })
+
+            // --- Stage Elements --- //
+
+            // Trajectory Line
+            trajectoryLine = new Line([200, 10, 0, 0], 2, "0xffffff");
+            app.stage.addChild(trajectoryLine);
+
+            // Apoapsis
+            apoapsisIcon = new Sprite(id["Space Tilesheet 20.aseprite"]);
+            apoapsisIcon.anchor.set(0.5, 1);
+            app.stage.addChild(apoapsisIcon);
+
+            // Periapsis
+            periapsisIcon = new Sprite(id["Space Tilesheet 21.aseprite"]);
+            periapsisIcon.anchor.set(0.5, 1);
+            app.stage.addChild(periapsisIcon);
+
+            // Planet
+            planet = new Graphics();
+            planet.beginFill(0x999999);
+            planet.drawCircle(0, 0, 637100);
+            planet.endFill();
+            planet.position.set(0);
+            planet.scale.set(1);
+            app.stage.addChild(planet);
+
+            explosionTextures = [];
+            for (let i = 4; i < 15; i++) {
+                var texture = id["Space Tilesheet " + i + ".aseprite"];
+                explosionTextures.push(texture);
+            }
+
+            // Rocket
+            rocket = new Sprite(id["Space Tilesheet 0.aseprite"]);
+            rocket.anchor.set(0.5);
+            position = new Vector(0, -(637100 + 100000));
+            velocity = new Vector(1800 / 60, 0);
+            rocket.rotation = Math.PI / 2;
+            angularVelocity = 0;
+            app.stage.addChild(rocket);
+
+            // --- GUI --- //
+
+            // GUI Container
+            GUI = new Container();
+            app.stage.addChild(GUI);
+
+            // Velocity
+            velocityText = new Text("Velocity: ", style);
+            GUI.addChild(velocityText);
+            velocityText.position = new Vector(10, 0);
+
+            // Altitude
+            altitudeText = new Text("Altitude: ", style);
+            GUI.addChild(altitudeText);
+            altitudeText.position = new Vector(10, 50);
+
+            // Fuel
+            fuelText = new Text("Fuel: ", style);
+            GUI.addChild(fuelText);
+            fuelText.position.set(10, 100);
+
+            fuelBar = new PIXI.Container();
+            fuelBar.position.set(100, 100);
+            GUI.addChild(fuelBar);
+
+            let innerBar = new Graphics();
+            innerBar.beginFill(0x555555);
+            innerBar.drawRect(0, 0, 200, 40);
+            innerBar.endFill();
+            fuelBar.addChild(innerBar);
+
+            let outerBar = new PIXI.Graphics();
+            outerBar.beginFill(0xFF3300);
+            outerBar.drawRect(0, 0, 200, 40);
+            outerBar.endFill();
+            fuelBar.addChild(outerBar);
+
+            fuelBar.outer = outerBar;
+
+            // Heading
+            headingText = new Text("Heading: ", style);
+            GUI.addChild(headingText);
+            headingText.position.set(10, 160);
+
+            headingCircle = new Graphics();
+            headingCircle.beginFill(0xdddddd);
+            headingCircle.lineStyle(5, 0x555555);
+            headingCircle.drawCircle(0, 0, 20);
+            headingCircle.endFill();
+            headingCircle.position.set(190, 180);
+            GUI.addChild(headingCircle);
+
+            heading = new Line([Vector.zero, Vector.one.multiply(10)], 3, "0xfc5044");
+            GUI.addChild(heading);
+            heading.position.set(190, 180);
+
+            // Kerb
+            kerb = new Sprite(id["Space Tilesheet 22.aseprite"]);
+            kerb.anchor.set(0, 1);
+            kerb.position.set(10, window.innerHeight - 10);
+            kerb.scale.set(8);
+            GUI.addChild(kerb);
+
+            // Time Warp text
+            timeWarpText = new Text("TimeWarp: ", style);
+            GUI.addChild(timeWarpText);
+            timeWarpText.anchor.set(0.5);
+            timeWarpText.position = new Vector(window.innerWidth / 2, 100);
+            timeWarpText.alpha = 0;
+            timeWarpText.scale.set(0.5);
+
+            // --- Keys --- //
+
+            keyM.press = () => {
+                if (zoom > 50) {
+                    zoom = 1;
+                } else if (zoom <= 50) {
+                    zoom = 3000;
+                }
+            }
+
+            comma.press = () => {
+                if (timeWarpIndex > 0) {
+                    timeWarpIndex--;
+                    timeWarp = timeWarps[timeWarpIndex];
+                    changeTimeWarpText(timeWarp + "x TimeWarp");
+                }
+            }
+
+            period.press = () => {
+                if (timeWarpIndex < timeWarps.length - 1) {
+                    timeWarpIndex++;
+                    timeWarp = timeWarps[timeWarpIndex];
+
+                    if (timeWarp * 1000 > altitude) {
+                        changeTimeWarpText("Cannot " + timeWarp + "x Warp at this Altitude! Go above " + timeWarp + "Km");
+                        if (timeWarpIndex > 0) {
+                            timeWarpIndex--;
+                            timeWarp = timeWarps[timeWarpIndex];
+                        }
+                    } else {
+                        changeTimeWarpText(timeWarp + "x TimeWarp");
+                    }
+                }
+
+            }
+
+            state = Play;
+            app.ticker.add(delta => Update(delta));
+        }
+
+        function Update(delta) {
+            state(delta);
+        }
+
+        // -----------------------------------------------======== Play ========----------------------------------------------- //
+
+        let animationAmount = 0
+
+        function Play(delta) {
+            if (alive) {
+                altitude = position.distance(planet) - 637100;
+                if (timeWarp * 1000 > altitude) {
+                    if (timeWarpIndex > 0) {
+                        timeWarpIndex--;
+                        timeWarp = timeWarps[timeWarpIndex];
+                        changeTimeWarpText(timeWarp + "x TimeWarp");
+                    }
+                }
+                delta *= timeWarp;
+
+                fuelBar.outer.width = clamp(lerp(0, 200, fuel / maxFuel), 0, 200);
+
+                // Inputs
+                if (left.isDown) {
+                    angularVelocity -= rotationSpeed;
+                }
+                if (right.isDown) {
+                    angularVelocity += rotationSpeed;
+                }
+                if (up.isDown) {
+                    if (fuel > 0) {
+                        velocity.x += Math.cos(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
+                        velocity.y += Math.sin(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
+                        fuel = clamp(fuel - thrust * delta, 0, maxFuel);
+                    }
+                }
+                if (down.isDown) {
+                    angularVelocity *= (1 - brakingForce) / delta;
+                }
+
+
+
+                // If Dead
+            } else {
+                if (timeWarpIndex > 0) {
+                    timeWarpIndex = 0;
+                    timeWarp = timeWarps[timeWarpIndex];
+                    changeTimeWarpText(timeWarp + "x TimeWarp");
+                }
+
+                if (animationAmount <= explosionTextures.length) {
+                    let texture = explosionTextures[animationAmount - animationAmount % 1]
+                    rocket.texture = texture;
+                    animationAmount += 1 / (60 / 12) * delta;
+                } else {
+                    animationAmount = explosionTextures.length - 1;
+                    //animationAmount = 0;
+                }
+            }
+
+            velocity = velocity.add(gravity(position).multiply(delta));
+
+            position.x += velocity.x * delta;
+            position.y += velocity.y * delta;
+
+            rocket.x = position.x;
+            rocket.y = position.y;
+            rocket.rotation += angularVelocity * delta;
+
+            //velocity.x *= 1-drag;sa
+            //velocity.y *= 1-drag;
+            angularVelocity *= 1 - drag;
+
+            localMousePos = new Vector(worldMousePos.x + app.stage.pivot.x, worldMousePos.y + app.stage.pivot.y);
+            var points = trajectory(position, velocity, 3000, 0.025)
+                //console.log(points.length);
+            trajectoryLine.updatePoints(points)
+            trajectoryLine.lineWidth = zoom * 2;
+            periapsisIcon.scale.set(zoom * 2);
+            apoapsisIcon.scale.set(zoom * 2);
+
+            // Camera
+
+            app.stage.scale.set(1 / zoom);
+            app.stage.pivot.x = rocket.position.x - innerWidth / 2 * zoom;
+            app.stage.pivot.y = rocket.position.y - innerHeight / 2 * zoom;
+
+            // GUI
+
+            GUI.scale.set(zoom);
+            GUI.position.set(app.stage.pivot.x, app.stage.pivot.y);
+
+            velocityText.text = "Velocity: " + (velocity.magnitude() * 60).toFixed(2) + " M/s";
+            1
+            if (altitude > 1000) {
+                altitudeText.text = "Altitude: " + (altitude / 1000).toFixed(3) + "Km";
+            } else {
+                altitudeText.text = "Altitude: " + (altitude).toFixed(2) + "M";
+            }
+
+            heading.updatePoints([Vector.zero, Vector.zero.radToVector(rocket.rotation - Math.PI / 2).normalized().multiply(16)]);
+
+            timeWarpText.alpha = clamp(timeWarpText.alpha - 4 / (60 * 3 /* <-- Time to fade */ ), 0, 4);
+        }
+
+        // -----------------------------------------------======== Functions ========----------------------------------------------- //
+
+        function trajectory(position, velocity, maxIterations, scale) {
+            var points = [],
+                vel = [],
+                length = 0;
+            fullOrbit = gravity(position).toRad() + Math.PI,
+                currentAngle = 0,
+                looped = false,
+                playerDistance = position.distance(planet),
+                lastDistance = Vector.zero,
+                apoapsis = Vector.zero,
+                apoapsisDistance = 0
+            periapsis = Vector.zero
+            periapsisDistance = 0;
+
+            scale /= Math.pow(maxIterations, 1.5);
+
+            points[0] = position;
+            vel[0] = velocity;
+
+            for (let i = 1; i < maxIterations; i++) {
+
+                let gravForce = gravity(points[i - 1]);
+                lastDistance = points[i - 1].distance(planet);
+                length = scale * Math.pow(lastDistance, 1.5);
+
+                if (gravForce != Vector.zero) {
+                    if (currentAngle > fullOrbit) {
+                        looped = true
+                    }
+
+                    if (looped && currentAngle < fullOrbit + 0.1) {
+                        points[i] = position;
+                        break;
+                    } else {
+                        currentAngle = (gravForce.toRad() + Math.PI);
+                        vel[i] = vel[i - 1].add(gravForce.multiply(length));
+                        points[i] = points[i - 1].add(vel[i].multiply(length));
+
+                    }
+
+                    var distance = points[i].distance(planet);
+                    if (distance > apoapsisDistance) {
+                        if (playerDistance > distance) {
+                            apoapsis = position;
+                        } else {
+                            apoapsis = points[i];
+                            apoapsisDistance = distance;
+                        }
+                    }
+                    if (distance < periapsisDistance || periapsisDistance === 0) {
+                        periapsis = points[i];
+                        periapsisDistance = distance;
+                    }
+
+                } else {
+                    break;
+                }
+            }
+
+            apoapsisIcon.position.set(apoapsis.x, apoapsis.y);
+            periapsisIcon.position.set(periapsis.x, periapsis.y);
+
+            return points;
+        }
+
+        function lerp(start, end, percent) {
+            return (1 - percent) * start + percent * end
+        }
+
+        function keyboard(value) {
+            let key = {};
+            key.value = value;
+            key.isDown = false;
+            key.isUp = true;
+            key.press = undefined;
+            key.release = undefined;
+
+            // Key down handler
+            key.downHandler = event => {
+                if (event.key === key.value) {
+                    if (key.isUp && key.press) key.press();
+                    key.isDown = true;
+                    key.isUp = false;
+                    event.preventDefault();
+                }
+            };
+
+            // Key up handler
+            key.upHandler = event => {
+                if (event.key === key.value) {
+                    if (key.isDown && key.release) key.release();
+                    key.isDown = false;
+                    key.isUp = true;
+                    event.preventDefault();
+                }
+            }
+
+            // Attach event listeners
+            const downListner = key.downHandler.bind(key);
+            const upListner = key.upHandler.bind(key);
+
+
+            window.addEventListener("keydown", downListner, false);
+            window.addEventListener("keyup", upListner, false);
+
+            // Detach event listners
+            key.unsubscribe = () => {
+                window.removeEventListener("keydown", downListner);
+                window.removeEventListener("keyup", upListner);
+            };
+
+            return key;
+        }
+
+        function gravity(position) {
+            let relativePosition = position.distanceTo(planet);
+            let distance = relativePosition.magnitude();
+            if (distance > 637100) {
+                let direction = relativePosition.normalized();
+                let gravForce = (637100 * 100 * 10) / (distance * distance);
+                return direction.multiply(gravForce);
+            } else {
+                return Vector.zero;
+            }
+        }
+
+        function clamp(num, min, max) {
+            return num <= min ? min : num >= max ? max : num;
+        }
+
+        function changeTimeWarpText(text) {
+            timeWarpText.alpha = 4;
+            timeWarpText.text = text;
+        }
+    </script>
+</body>
+
+</html>
