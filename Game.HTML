@@ -217,7 +217,7 @@
             brakingForce = 0.05,
             maxFuel = 2000;
 
-        var line, apoapsisIcon, periapsisIcon, heading, headingCircle, fuelBar;
+        var line, apoapsisIcon, periapsisIcon, heading, headingCircle, fuelBar, collisionCourse = false;
         var GUI, velocityText, altitudeText, fuelText, headingText, timeWarpText;
         let state, rocket, alive = true,
             explosionTextures, fuel = maxFuel,
@@ -410,6 +410,8 @@
             }
 
             if (alive) {
+                kerb.texture = id["Space Tilesheet 22.aseprite"];
+
                 altitude = position.distance(planet) - planet.radius;
                 if (timeWarp * 1000 > altitude) {
                     if (timeWarpIndex > 0) {
@@ -434,7 +436,7 @@
                         velocity.x += Math.cos(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
                         velocity.y += Math.sin(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
                         fuel = clamp(fuel - thrust * delta, 0, maxFuel);
-                        animate(rocket, "Thrust", true);
+                        animate(rocket, "Thrust", true, delta);
                     }
                 } else {
                     animate(rocket, "Idle", true);
@@ -456,8 +458,12 @@
                 //velocity.y *= 1-drag;
                 angularVelocity *= 1 - drag;
 
-                if (altitude < 5000) {
-                    kerb.texture = id["Space Tilesheet 24.aseprite"]
+                if (altitude / 1000 < velocity.magnitude() * 2) {
+                    if (collisionCourse) {
+                        kerb.texture = id["Space Tilesheet 24.aseprite"];
+                    } else {
+                        kerb.texture = id["Space Tilesheet 23.aseprite"]
+                    }
                 }
 
                 // If Dead
@@ -532,6 +538,7 @@
                 length = scale * Math.pow(lastDistance, 1.5);
 
                 if (gravForce != Vector.zero) {
+                    collisionCourse = false;
                     if (currentAngle > fullOrbit) {
                         looped = true
                     }
@@ -561,6 +568,7 @@
                     }
 
                 } else {
+                    collisionCourse = true;
                     break;
                 }
             }
@@ -646,13 +654,13 @@
 
             if (object.lastAnimation !== animationName) {
                 object.frame = animation.from;
-                console.log("newAnim")
             }
 
             if (object.frame < animation.to + 1) {
-                console.log(object.frame - object.frame % 1);
-                object.texture = id["Space Tilesheet " + (object.frame - object.frame % 1) + ".aseprite"];
-                object.frame += 1 / (60 / 12) * delta;
+                let spriteNumber = (object.frame - object.frame % 1)
+                object.texture = id["Space Tilesheet " + spriteNumber + ".aseprite"];
+                let frameDuration = json.frames["Space Tilesheet " + spriteNumber + ".aseprite"].duration;
+                object.frame += 1 / (60 / delta * frameDuration / 1000)
             } else if (loop) {
                 object.frame = animation.from;
             } else {
