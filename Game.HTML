@@ -3,8 +3,7 @@
 
 <head>
     <title>Kerbz</title>
-    <script src="pixi.min.js" type="text/javascript"></script>
-
+    <script src="Pixi/pixi.min.js" type="text/javascript"></script>
 </head>
 
 <body>
@@ -204,6 +203,14 @@
 
         // -----------------------------------------------======== Setup ========----------------------------------------------- //
 
+        let json;
+        let request = new XMLHttpRequest();
+        request.open("GET", "Assets/space-spritesheet.json", true);
+        request.onload = function() {
+            json = JSON.parse(this.response);
+        }
+        request.send();
+
         const drag = 0.005,
             maxThrust = 0.4,
             rotationSpeed = 0.002,
@@ -229,6 +236,8 @@
             // Create an alias called id for all the textures
             id = resources["Assets/space-spritesheet.json"].textures;
 
+            console.log(json.meta.frameTags.find(x => x.name === 'Explosion').to);
+
             let style = new TextStyle({
                 fontFamily: "Arial",
                 fontSize: 36,
@@ -253,12 +262,15 @@
 
             // Planet
             planet = new Graphics();
-            planet.beginFill(0x999999);
-            planet.drawCircle(0, 0, 637100);
+            planet.beginFill(0x285cc4);
+            planet.lineStyle(10, 0x14a02e);
+            planet.drawCircle(0, 0, 63705);
             planet.endFill();
             planet.position.set(0);
-            planet.scale.set(1);
+            planet.scale.set(10);
             app.stage.addChild(planet);
+            planet.radius = planet.width / 2;
+            console.log(planet.radius);
 
             explosionTextures = [];
             for (let i = 4; i < 15; i++) {
@@ -350,7 +362,7 @@
 
             keyM.press = () => {
                 if (zoom > 50) {
-                    zoom = 1;
+                    zoom = 0.2;
                 } else if (zoom <= 50) {
                     zoom = 3000;
                 }
@@ -395,8 +407,12 @@
         let animationAmount = 0
 
         function Play(delta) {
+            if (position.distance(planet) <= planet.radius) {
+                alive = false;
+            }
+
             if (alive) {
-                altitude = position.distance(planet) - 637100;
+                altitude = position.distance(planet) - planet.radius;
                 if (timeWarp * 1000 > altitude) {
                     if (timeWarpIndex > 0) {
                         timeWarpIndex--;
@@ -426,10 +442,27 @@
                     angularVelocity *= (1 - brakingForce) / delta;
                 }
 
+                velocity = velocity.add(gravity(position).multiply(delta));
 
+                position.x += velocity.x * delta;
+                position.y += velocity.y * delta;
+
+                rocket.x = position.x;
+                rocket.y = position.y;
+                rocket.rotation += angularVelocity * delta;
+
+                //velocity.x *= 1-drag;
+                //velocity.y *= 1-drag;
+                angularVelocity *= 1 - drag;
+
+                if (altitude < 5000) {
+                    kerb.texture = id["Space Tilesheet 24.aseprite"]
+                }
 
                 // If Dead
             } else {
+                kerb.texture = id["Space Tilesheet 26.aseprite"]
+
                 if (timeWarpIndex > 0) {
                     timeWarpIndex = 0;
                     timeWarp = timeWarps[timeWarpIndex];
@@ -445,19 +478,6 @@
                     //animationAmount = 0;
                 }
             }
-
-            velocity = velocity.add(gravity(position).multiply(delta));
-
-            position.x += velocity.x * delta;
-            position.y += velocity.y * delta;
-
-            rocket.x = position.x;
-            rocket.y = position.y;
-            rocket.rotation += angularVelocity * delta;
-
-            //velocity.x *= 1-drag;sa
-            //velocity.y *= 1-drag;
-            angularVelocity *= 1 - drag;
 
             localMousePos = new Vector(worldMousePos.x + app.stage.pivot.x, worldMousePos.y + app.stage.pivot.y);
             var points = trajectory(position, velocity, 3000, 0.025)
@@ -610,9 +630,9 @@
         function gravity(position) {
             let relativePosition = position.distanceTo(planet);
             let distance = relativePosition.magnitude();
-            if (distance > 637100) {
+            if (distance > planet.radius) {
                 let direction = relativePosition.normalized();
-                let gravForce = (637100 * 100 * 10) / (distance * distance);
+                let gravForce = (planet.radius * 100 * 10) / (distance * distance);
                 return direction.multiply(gravForce);
             } else {
                 return Vector.zero;
