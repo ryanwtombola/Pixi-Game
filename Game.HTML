@@ -158,13 +158,14 @@
             constructor(spriteName, attachments, mass) {
                 this.spriteName = spriteName;
                 this.attachments = attachments;
+                this.mass = mass;
             }
         }
 
         class FuelTank extends Part {
-            constructor(spriteName, attachments, mass, fuelAmount) {
+            constructor(spriteName, attachments, mass, fuel) {
                 super(spriteName, attachments, mass);
-                this.fuelAmount = fuelAmount;
+                this.fuel = fuel;
             }
         }
 
@@ -172,6 +173,39 @@
             constructor(spriteName, attachments, mass, thrust) {
                 super(spriteName, attachments, mass);
                 this.thrust = thrust;
+            }
+        }
+
+        class Cabin extends Part {
+            constructor(spriteName, attachments, mass) {
+                super(spriteName, attachments, mass);
+            }
+        }
+
+        class Stage {
+            constructor(parts, rootPart) {
+                this.parts = parts;
+                this.rootPart = rootPart;
+
+                this.mass = 0;
+                this.fuel = 0;
+                this.thrust = 0;
+
+                this.initialize();
+            }
+
+            initialize() {
+                this.parts.forEach(part => {
+                    this.mass += part.mass;
+
+                    if (part.constructor.name === 'FuelTank') {
+                        this.fuel += part.fuel;
+                    }
+
+                    if (part.constructor.name === 'Engine') {
+                        this.thrust += part.thrust;
+                    }
+                });
             }
         }
 
@@ -469,6 +503,15 @@
             state = VAB;
             app.ticker.add(delta => Update(delta));
         }
+
+        let cabin = new Cabin("cabin.png", [], 1);
+        let tank = new FuelTank("tank.png", [], 1, 500);
+        let lightweightTank = new FuelTank("tank.png", [], 0.5, 300);
+        let engine = new Engine("engine.png", [], 2, 0.4);
+
+        let stage1 = new Stage([cabin, lightweightTank, tank, tank, engine], cabin);
+
+        console.log(`This rocket weighs ${stage1.mass} tons, ${stage1.fuel} units of fuel and ${stage1.thrust} units of thrust`);
 
         function Update(delta) {
             state(delta);
