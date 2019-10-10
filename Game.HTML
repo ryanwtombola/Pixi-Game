@@ -43,25 +43,31 @@
                 else
                     return 0;
             }
+            floor() {
+                return new Vector(Math.floor(this.x), Math.floor(this.y));
+            }
+            clamp(minX, minY, maxX, maxY) {
+                return new Vector(clamp(this.x, minX, maxX), clamp(this.y, minY, maxY));
+            }
 
             // Caluclates the distance from one vector to another and returns a vector
             distanceTo(target) {
                     if (typeof target === 'object') {
-                        target = new Vector(target.x, target.y)
+                        target = new Vector(target.x, target.y);
                     }
                     return new Vector(target.x - this.x, target.y - this.y)
                 }
                 // Calculates the direction to another vector and returns a normalized vector
             directionTo(target) {
                     if (typeof target === 'object') {
-                        target = new Vector(target.x, target.y)
+                        target = new Vector(target.x, target.y);
                     }
                     return this.distanceTo(target).normalized();
                 }
                 // Returns the distace to the target as a float (non directional)
             distance(target) {
                 if (typeof target === 'object') {
-                    target = new Vector(target.x, target.y)
+                    target = new Vector(target.x, target.y);
                 }
                 return this.distanceTo(target).magnitude();
             }
@@ -146,6 +152,29 @@
             }
         }
 
+        // Attachments is a bool array showing if the object can attach on a certain side [up, right, down, left]
+
+        class Part {
+            constructor(spriteName, attachments, mass) {
+                this.spriteName = spriteName;
+                this.attachments = attachments;
+            }
+        }
+
+        class FuelTank extends Part {
+            constructor(spriteName, attachments, mass, fuelAmount) {
+                super(spriteName, attachments, mass);
+                this.fuelAmount = fuelAmount;
+            }
+        }
+
+        class Engine extends Part {
+            constructor(spriteName, attachments, mass, thrust) {
+                super(spriteName, attachments, mass);
+                this.thrust = thrust;
+            }
+        }
+
         // -----------------------------------------------======== PIXI ========----------------------------------------------- //
 
         // Preserves pixels when upscaling
@@ -215,15 +244,19 @@
             maxThrust = 0.4,
             rotationSpeed = 0.002,
             brakingForce = 0.05,
-            maxFuel = 2000;
+            maxFuel = 2500;
+
+        let vab, spaceShip, ghost, mouseGrid;
 
         var line, apoapsisIcon, periapsisIcon, heading, headingCircle, fuelBar, collisionCourse = false;
         var GUI, velocityText, altitudeText, fuelText, headingText, timeWarpText;
         let state, rocket, alive = true,
-            explosionTextures, fuel = maxFuel,
+            launched, fuel = maxFuel,
             thrust = maxThrust,
             altitude, planet;
-        let position, velocity, angularVelocity, zoom = 0.2;
+        let position, velocity, angularVelocity, zoom = 0.05,
+            mapThreshold = 10,
+            mapTransition = 10;
         let worldMousePos = Vector.zero,
             localMousePos = Vector.zero;
         let timeWarp = 1,
@@ -242,21 +275,24 @@
                 fill: "white"
             })
 
-            // --- Stage Elements --- //
+            // --- Vehicle Assembley Building --- //
 
-            // Trajectory Line
-            trajectoryLine = new Line([200, 10, 0, 0], 2, "0xffffff");
-            app.stage.addChild(trajectoryLine);
+            vab = new Container();
+            app.stage.addChild(vab);
+            vab.scale.set(8);
 
-            // Apoapsis
-            apoapsisIcon = new Sprite(id["Space Tilesheet 20.aseprite"]);
-            apoapsisIcon.anchor.set(0.5, 1);
-            app.stage.addChild(apoapsisIcon);
+            spaceShip = new Container();
+            vab.addChild(spaceShip);
+            spaceShip.elements = createArray(3, 6);
 
-            // Periapsis
-            periapsisIcon = new Sprite(id["Space Tilesheet 21.aseprite"]);
-            periapsisIcon.anchor.set(0.5, 1);
-            app.stage.addChild(periapsisIcon);
+            ghost = new Sprite(id["Space Tilesheet 25.aseprite"]);
+            spaceShip.addChild(ghost);
+
+            // --- World Elements --- //
+
+            // World Container
+            world = new Container();
+            app.stage.addChild(world);
 
             // Planet
             planet = new Graphics();
@@ -266,31 +302,46 @@
             planet.endFill();
             planet.position.set(0);
             planet.scale.set(10);
-            app.stage.addChild(planet);
+            world.addChild(planet);
             planet.radius = planet.width / 2;
-
-            explosionTextures = [];
-            for (let i = 4; i < 15; i++) {
-                var texture = id["Space Tilesheet " + i + ".aseprite"];
-                explosionTextures.push(texture);
-            }
 
             // Rocket
             rocket = new Sprite(id["Space Tilesheet 0.aseprite"]);
             rocket.anchor.set(0.5);
-            position = new Vector(0, -(637100 + 100000));
-            velocity = new Vector(1800 / 60, 0);
-            rocket.rotation = Math.PI / 2;
+            position = new Vector(0, -(637100 + 1.2));
+            velocity = new Vector(0 /*1800 / 60*/ , 0);
+            rocket.rotation = 0;
             rocket.frame = 0;
             rocket.lastAnimation = "";
+            rocket.scale.set(0.25)
             angularVelocity = 0;
-            app.stage.addChild(rocket);
+            world.addChild(rocket);
+
+            // --- Map --- //
+
+            // Map Overlay
+            map = new Container();
+            world.addChild(map)
+
+            // Trajectory Line
+            trajectoryLine = new Line([200, 10, 0, 0], 2, "0xffffff");
+            map.addChild(trajectoryLine);
+
+            // Apoapsis
+            apoapsisIcon = new Sprite(id["Space Tilesheet 20.aseprite"]);
+            apoapsisIcon.anchor.set(0.5, 1);
+            map.addChild(apoapsisIcon);
+
+            // Periapsis
+            periapsisIcon = new Sprite(id["Space Tilesheet 21.aseprite"]);
+            periapsisIcon.anchor.set(0.5, 1);
+            map.addChild(periapsisIcon);
 
             // --- GUI --- //
 
             // GUI Container
             GUI = new Container();
-            app.stage.addChild(GUI);
+            world.addChild(GUI);
 
             // Velocity
             velocityText = new Text("Velocity: ", style);
@@ -358,42 +409,64 @@
             timeWarpText.scale.set(0.5);
 
             // --- Keys --- //
-
+            //console.log(spaceShip.elements)
             keyM.press = () => {
-                if (zoom > 50) {
-                    zoom = 0.2;
-                } else if (zoom <= 50) {
-                    zoom = 3000;
+                if (state === World) {
+                    if (zoom > mapThreshold) {
+                        zoom = 0.2;
+                    } else if (zoom <= mapThreshold) {
+                        zoom = 3000;
+                    }
+                } else {
+                    let x = mouseGrid.x,
+                        y = mouseGrid.y;
+                    if (spaceShip.elements[x][y] === undefined) {
+                        let newSprite = new Sprite(id["Space Tilesheet 24.aseprite"]);
+                        spaceShip.addChild(newSprite);
+                        newSprite.position.x = mouseGrid.x * 16;
+                        newSprite.position.y = mouseGrid.y * 16;
+                        spaceShip.elements[x][y] = newSprite;
+                        console.log(spaceShip.children)
+                    } else {
+                        spaceShip.removeChild(spaceShip.elements[x][y]);
+                        spaceShip.elements[x][y] = undefined;
+                        console.log(spaceShip.children)
+                    }
+
                 }
             }
 
             comma.press = () => {
-                if (timeWarpIndex > 0) {
-                    timeWarpIndex--;
-                    timeWarp = timeWarps[timeWarpIndex];
-                    changeTimeWarpText(timeWarp + "x TimeWarp");
+                if (state === world) {
+                    if (timeWarpIndex > 0) {
+                        timeWarpIndex--;
+                        timeWarp = timeWarps[timeWarpIndex];
+                        changeTimeWarpText(timeWarp + "x TimeWarp");
+                    }
                 }
             }
 
             period.press = () => {
-                if (timeWarpIndex < timeWarps.length - 1) {
-                    timeWarpIndex++;
-                    timeWarp = timeWarps[timeWarpIndex];
+                if (state === world) {
+                    if (timeWarpIndex < timeWarps.length - 1) {
+                        timeWarpIndex++;
+                        timeWarp = timeWarps[timeWarpIndex];
 
-                    if (timeWarp * 1000 > altitude) {
-                        changeTimeWarpText("Cannot " + timeWarp + "x Warp at this Altitude! Go above " + timeWarp + "Km");
-                        if (timeWarpIndex > 0) {
-                            timeWarpIndex--;
-                            timeWarp = timeWarps[timeWarpIndex];
+                        if (timeWarp * 1000 > altitude) {
+                            changeTimeWarpText("Cannot " + timeWarp + "x Warp at this Altitude! Go above " + timeWarp + "Km");
+                            if (timeWarpIndex > 0) {
+                                timeWarpIndex--;
+                                timeWarp = timeWarps[timeWarpIndex];
+                            }
+                        } else {
+                            changeTimeWarpText(timeWarp + "x TimeWarp");
                         }
-                    } else {
-                        changeTimeWarpText(timeWarp + "x TimeWarp");
                     }
                 }
-
             }
 
-            state = Play;
+            world.visible = false;
+            state = VAB;
             app.ticker.add(delta => Update(delta));
         }
 
@@ -403,9 +476,15 @@
 
         // -----------------------------------------------======== Play ========----------------------------------------------- //
 
-        function Play(delta) {
+        function VAB(delta) {
+            spaceShip.x = (window.innerWidth / 2 / 8) - 24
+            mouseGrid = worldMousePos.subtract(Vector.one.multiply(spaceShip).multiply(8)).divide(16 * 8).floor().clamp(0, 0, 3 - 1, 6 - 1);
+            ghost.position.x = mouseGrid.x * 16;
+            ghost.position.y = mouseGrid.y * 16;
+        }
 
-            if (position.distance(planet) <= planet.radius) {
+        function World(delta) {
+            if (position.distance(planet) <= planet.radius && alive) {
                 alive = false;
             }
 
@@ -425,17 +504,14 @@
                 fuelBar.outer.width = clamp(lerp(0, 200, fuel / maxFuel), 0, 200);
 
                 // Inputs
-                if (left.isDown) {
-                    angularVelocity -= rotationSpeed;
-                }
-                if (right.isDown) {
-                    angularVelocity += rotationSpeed;
-                }
                 if (up.isDown) {
+                    launched = true
                     if (fuel > 0) {
-                        velocity.x += Math.cos(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
-                        velocity.y += Math.sin(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
-                        fuel = clamp(fuel - thrust * delta, 0, maxFuel);
+                        if (launched) {
+                            velocity.x += Math.cos(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
+                            velocity.y += Math.sin(rocket.rotation - Math.PI / 2) * thrust / 60 * delta;
+                            fuel = clamp(fuel - thrust * delta, 0, maxFuel);
+                        }
                         animate(rocket, "Thrust", true, delta);
                     }
                 } else {
@@ -445,21 +521,30 @@
                     angularVelocity *= (1 - brakingForce) / delta;
                 }
 
-                velocity = velocity.add(gravity(position).multiply(delta));
+                if (launched) {
+                    if (left.isDown) {
+                        angularVelocity -= rotationSpeed;
+                    }
+                    if (right.isDown) {
+                        angularVelocity += rotationSpeed;
+                    }
 
-                position.x += velocity.x * delta;
-                position.y += velocity.y * delta;
+                    velocity = velocity.add(gravity(position).multiply(delta));
+
+                    position.x += velocity.x * delta;
+                    position.y += velocity.y * delta;
+                    rocket.rotation += angularVelocity * delta;
+
+                    //velocity.x *= 1-drag;
+                    //velocity.y *= 1-drag;
+                    angularVelocity *= 1 - drag;
+                }
 
                 rocket.x = position.x;
                 rocket.y = position.y;
-                rocket.rotation += angularVelocity * delta;
-
-                //velocity.x *= 1-drag;
-                //velocity.y *= 1-drag;
-                angularVelocity *= 1 - drag;
 
                 if (altitude / 1000 < velocity.magnitude() * 2) {
-                    if (collisionCourse) {
+                    if (collisionCourse && apoapsis === position) {
                         kerb.texture = id["Space Tilesheet 24.aseprite"];
                     } else {
                         kerb.texture = id["Space Tilesheet 23.aseprite"]
@@ -477,6 +562,8 @@
                     changeTimeWarpText(timeWarp + "x TimeWarp");
                 }
             }
+
+            map.alpha = clamp((zoom - mapThreshold + mapTransition / 2) / mapTransition, 0, 1)
 
             localMousePos = new Vector(worldMousePos.x + app.stage.pivot.x, worldMousePos.y + app.stage.pivot.y);
             var points = trajectory(position, velocity, 3000, 0.025)
@@ -667,6 +754,18 @@
                 object.frame = animation.to;
             }
             object.lastAnimation = animationName;
+        }
+
+        function createArray(length) {
+            var arr = new Array(length || 0),
+                i = length;
+
+            if (arguments.length > 1) {
+                var args = Array.prototype.slice.call(arguments, 1);
+                while (i--) arr[length - 1 - i] = createArray.apply(this, args);
+            }
+
+            return arr;
         }
     </script>
 </body>
