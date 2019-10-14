@@ -21,6 +21,8 @@
         class Vector {
             static zero = new Vector(0, 0);
             static one = new Vector(1, 1);
+            static half = new Vector(0.5, 0.5);
+
             static up = new Vector(0, 1);
             static right = new Vector(1, 0);
             static down = new Vector(0, -1);
@@ -152,6 +154,18 @@
             }
         }
 
+        // class Object {
+        //     constructor(spriteID,
+        //         position = Vector.zero,
+        //         rotation = 0,
+        //         velocity = Vector.zero,
+        //         angularVelocity = 0,
+        //         scale = 1,
+        //         anchor = Vector.half) {
+        //     }
+        // }
+
+
         // Attachments is a bool array showing if the object can attach on a certain side [up, right, down, left]
 
         class Part {
@@ -207,6 +221,25 @@
                     }
                 });
             }
+        }
+
+        class Rocket {
+            constructor() {
+                this.parts = [
+                    [],
+                    []
+                ]; // Test this dum dum
+                this.stages = [];
+
+                this.mass = 0;
+                this.initialize();
+            }
+            initialize() {
+                this.parts.forEach(part => {
+                    this.mass += part.mass;
+                });
+            }
+
         }
 
         // -----------------------------------------------======== PIXI ========----------------------------------------------- //
@@ -296,6 +329,15 @@
         let timeWarp = 1,
             timeWarpIndex = 0,
             timeWarps = [1, 2, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000];
+
+        let cabin = new Cabin("Space Tilesheet 27.aseprite", [0, 0, 1, 0], 1);
+        let tank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 1, 500);
+        let lightweightTank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 0.5, 300);
+        let engine = new Engine("Space Tilesheet 29.aseprite", [1, 0, 2, 0], 2, 0.4);
+
+        let stage1 = new Stage([cabin, lightweightTank, tank, tank, engine], cabin);
+
+        console.log(`This rocket weighs ${stage1.mass} tons, ${stage1.fuel} units of fuel and ${stage1.thrust} units of thrust`);
 
         // This will run when the image has loaded
         function setup() {
@@ -503,15 +545,6 @@
             state = VAB;
             app.ticker.add(delta => Update(delta));
         }
-
-        let cabin = new Cabin("cabin.png", [], 1);
-        let tank = new FuelTank("tank.png", [], 1, 500);
-        let lightweightTank = new FuelTank("tank.png", [], 0.5, 300);
-        let engine = new Engine("engine.png", [], 2, 0.4);
-
-        let stage1 = new Stage([cabin, lightweightTank, tank, tank, engine], cabin);
-
-        console.log(`This rocket weighs ${stage1.mass} tons, ${stage1.fuel} units of fuel and ${stage1.thrust} units of thrust`);
 
         function Update(delta) {
             state(delta);
