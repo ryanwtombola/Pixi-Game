@@ -154,25 +154,26 @@
             }
         }
 
-        // class Object {
-        //     constructor(spriteID,
-        //         position = Vector.zero,
-        //         rotation = 0,
-        //         velocity = Vector.zero,
-        //         angularVelocity = 0,
-        //         scale = 1,
-        //         anchor = Vector.half) {
-        //     }
-        // }
-
-
         // Attachments is a bool array showing if the object can attach on a certain side [up, right, down, left]
 
         class Part {
             constructor(spriteName, attachments, mass) {
+                this.sprite;
+                this.parent;
                 this.spriteName = spriteName;
                 this.attachments = attachments;
                 this.mass = mass;
+            }
+
+            addPart(x, y, parent) {
+                this.parent = parent;
+                this.sprite = new Sprite(id[this.spriteName]);
+                this.sprite.position.set(x * 16, y * 16);
+                this.parent.addChild(this.sprite);
+            }
+
+            removePart() {
+                this.parent.removeChild(this.sprite);
             }
         }
 
@@ -196,86 +197,92 @@
             }
         }
 
-        class Stage {
-            constructor(parts, rootPart) {
-                this.parts = parts;
-                this.rootPart = rootPart;
-
-                this.mass = 0;
-                this.fuel = 0;
-                this.thrust = 0;
-
-                this.initialize();
-            }
-
-            initialize() {
-                this.parts.forEach(part => {
-                    this.mass += part.mass;
-
-                    if (part.constructor.name === 'FuelTank') {
-                        this.fuel += part.fuel;
-                    } else if (part.constructor.name === 'Engine') {
-                        this.thrust += part.thrust;
-                    }
-                });
-            }
-        }
-
         class Rocket {
-            constructor() {
-                this.parts = [
-                    [3],
-                    [6]
-                ]; // Test this dum dum
-                this.stages = [];
+            constructor(x, y, width, height) {
+                this.container = new Container();
+                this.container.position.set(x, y);
 
+                this.parts = [
+                    [width],
+                    [height]
+                ];
+                this.parts = [...Array(width)].map(e => Array(height).fill(undefined));
+
+                this.mass;
+                this.COM;
+                this.fuel;
+                this.fuelMax;
+                this.thrust;
+            }
+
+            placePart(part, x, y) {
+                if (this.parts[x][y] === undefined) {
+                    this.parts[x][y] = Object.assign(new part.constructor, part);
+                    this.parts[x][y].addPart(x, y, this.container);
+                } else {
+                    this.parts[x][y].removePart();
+                    this.parts[x][y] = undefined;
+                }
+                this.calculateProperties();
+            }
+
+            calculateProperties() {
                 this.mass = 0;
                 this.fuel = 0;
                 this.thrust = 0;
-            }
-            calculateProperties() {
+
+                console.clear();
+
                 this.parts.map(y => y.map(part => {
                     if (part !== undefined) {
                         this.mass += part.mass;
 
                         if (part.constructor.name === 'FuelTank') {
                             this.fuel += part.fuel;
+                            this.fuelMax = this.fuel;
                         } else if (part.constructor.name === 'Engine') {
-                            console.log("ayy")
                             this.thrust += part.thrust;
                         }
-                        // console.clear()
-                        // console.log(this.mass)
-                        // console.log(this.thrust);
-                        // console.log(this.fuel)
                     }
                 }));
-            }
-            placePart(part, x, y) {
-                if (spaceShip.elements[x][y] === undefined) {
-                    let newSprite = new Sprite(id[part.spriteName]);
-                    spaceShip.addChild(newSprite);
-                    newSprite.position.x = x * 16;
-                    newSprite.position.y = y * 16;
-                    spaceShip.elements[x][y] = newSprite;
-                    this.parts[x][y] = part;
-                } else {
-                    spaceShip.removeChild(spaceShip.elements[x][y]);
-                    spaceShip.elements[x][y] = undefined;
-                    this.parts[x][y] = undefined;
-                }
-            }
-            checkCollisions() {
-                spaceShip.elements.map(y => y.map(part => {
-                    if (part !== undefined) {
-                        const partPos = Vector.zero.toVector(part).divide(4)
-                        const worldPartPos = position.add(partPos);
-                        if (worldPartPos.distance(planet) <= planet.radius && alive) {
-                            alive = false;
+
+                let mx = 0,
+                    my = 0;
+
+                for (let x = 0; x < this.parts.length; x++) {
+
+                    for (let y = 0; y < this.parts[0].length; y++) {
+                        const part = this.parts[x][y];
+
+                        if (part !== undefined) {
+                            mx += part.mass * x;
+                            my += part.mass * y;
                         }
                     }
-                }));
+                }
+
+                this.COM = new Vector(mx / this.mass, my / this.mass);
+                console.log(this.COM);
+
+                // console.log(`Mass: ${this.mass} Fuel: ${this.fuel} Thrust: ${this.thrust}`);
+                // console.log(`Thrust to Weight: ${this.thrust / this.mass}`);
             }
+
+            worldPos(value) {
+                return new Vector((value.x + 0.5) * 16 + this.container.x, (value.y + 0.5) * 16 + this.container.y);
+            }
+
+            // checkCollisions() {
+            //     this.parts.map(y => y.map(part => {
+            //         if (part !== undefined) {
+            //             const partPos = Vector.zero.toVector(part).divide(4)
+            //             const worldPartPos = position.add(partPos);
+            //             if (worldPartPos.distance(planet) <= planet.radius && alive) {
+            //                 alive = false;
+            //             }
+            //         }
+            //     }));
+            // }
 
         }
 
@@ -346,19 +353,16 @@
         request.send();
 
         const drag = 0.02,
-            rotationSpeed = 0.0001,
+            rotationSpeed = 0.0005,
             brakingForce = 0.05;
 
         let vab, spaceShip, ghost, mouseGrid;
 
-        var line, apoapsisIcon, periapsisIcon, heading, headingCircle, fuelBar, collisionCourse = false;
+        var line, apoapsisIcon, periapsisIcon, heading, headingCircle, fuelBar, collisionCourse = false,
+            COMIcon;
         var GUI, velocityText, altitudeText, fuelText, headingText, timeWarpText;
         let state, rocket, alive = true,
-            launched, maxFuel = 2500,
-            fuel = maxFuel,
-            maxThrust = 0.4,
-            thrust = maxThrust,
-            altitude, planet;
+            launched, altitude, planet;
         let position, velocity, angularVelocity, zoom = 0.05,
             mapThreshold = 10,
             mapTransition = 10;
@@ -375,20 +379,10 @@
         let partIndex = 0;
         let parts = [cabin, tank, engine];
 
-        let stage1 = new Stage([cabin, lightweightTank, tank, tank, engine], cabin);
+        let spaceRocket;
 
-        let spaceRocket = new Rocket();
-        spaceRocket.parts = [...Array(3)].map(e => Array(6).fill(undefined));
-        spaceRocket.parts[1][1] = cabin;
-        spaceRocket.parts[1][2] = lightweightTank;
-        spaceRocket.parts[1][3] = tank;
-        spaceRocket.parts[1][4] = tank;
-        spaceRocket.parts[1][5] = engine;
-        spaceRocket.stages[0] = stage1;
-
-        //console.log(`This rocket weighs ${stage1.mass} tons, ${stage1.fuel} units of fuel and ${stage1.thrust} units of thrust`);
         // for (let i = 0; i < spaceRocket.parts[1].length; i++) {
-        //     console.log(spaceRocket.parts[1][i]);
+        //     console.log(spaceRocket.parts[1]);
         // }
 
         // This will run when the image has loaded
@@ -409,12 +403,21 @@
             app.stage.addChild(vab);
             vab.scale.set(8);
 
-            spaceShip = new Container();
-            vab.addChild(spaceShip);
-            spaceShip.elements = createArray(3, 6);
+            spaceRocket = new Rocket(0, 0, 3, 6);
+            vab.addChild(spaceRocket.container);
+            spaceRocket.placePart(cabin, 1, 1);
+            spaceRocket.placePart(tank, 1, 2);
+            spaceRocket.placePart(tank, 1, 3);
+            spaceRocket.placePart(tank, 1, 4);
+            spaceRocket.placePart(engine, 1, 5);
+
 
             ghost = new Sprite(id[parts[partIndex].spriteName]);
-            spaceShip.addChild(ghost);
+            spaceRocket.container.addChild(ghost);
+
+            COMIcon = new Graphics();
+            COMIcon.beginFill(0xFFFFFF).drawCircle(0, 0, 2).endFill();
+            vab.addChild(COMIcon);
 
             // --- World Elements --- //
 
@@ -604,14 +607,6 @@
                 }
             }
 
-            // Place predefined rocket parts
-            for (let x = 0; x < spaceRocket.parts.length; x++) {
-                for (let y = 0; y < spaceRocket.parts[x].length; y++) {
-                    if (spaceRocket.parts[x][y] !== undefined)
-                        spaceRocket.placePart(spaceRocket.parts[x][y], x, y);
-                }
-            }
-
             world.visible = false;
             state = VAB;
             app.ticker.add(delta => Update(delta));
@@ -624,21 +619,35 @@
         // -----------------------------------------------======== Play ========----------------------------------------------- //
 
         function VAB(delta) {
-            spaceShip.x = (window.innerWidth / 2 / 8) - 24
-            mouseGrid = worldMousePos.subtract(Vector.one.multiply(spaceShip).multiply(8)).divide(16 * 8).floor().clamp(0, 0, 3 - 1, 6 - 1);
+            spaceRocket.container.x = (window.innerWidth / 2 / 8) - 24;
+            let COMPos = spaceRocket.worldPos(spaceRocket.COM);
+            console.log(COMPos.x)
+            if (COMPos.x !== NaN) {
+                COMIcon.position.set(COMPos.x, COMPos.y);
+                COMIcon.visible = true;
+            } else {
+                COMIcon.visible = false;
+            }
+            mouseGrid = worldMousePos.subtract(Vector.one.multiply(spaceRocket.container).multiply(8)).divide(16 * 8).floor()
             ghost.x = mouseGrid.x * 16;
             ghost.y = mouseGrid.y * 16;
 
-            spaceShip.elements.map(a => a.map(e => {
-                if (e !== undefined) e.tint = 0xFFFFFF
+            spaceRocket.parts.map(a => a.map(e => {
+                if (e !== undefined) e.sprite.tint = 0xFFFFFF
             }));
-            let hoveredPart = spaceShip.elements[mouseGrid.x][mouseGrid.y];
-            if (hoveredPart !== undefined) {
-                hoveredPart.tint = 0xFF0000;
-                ghost.visible = false;
+
+            if (mouseGrid.x >= 0 && mouseGrid.x < spaceRocket.parts.length && mouseGrid.y >= 0 && mouseGrid.y < spaceRocket.parts[0].length) {
+                let hoveredPart = spaceRocket.parts[mouseGrid.x][mouseGrid.y];
+                if (hoveredPart !== undefined) {
+                    hoveredPart.sprite.tint = 0xFF0000;
+                    ghost.visible = false;
+                } else {
+                    ghost.visible = true;
+                }
             } else {
-                ghost.visible = true;
+                ghost.visible = false;
             }
+
         }
 
         function World(delta) {
@@ -646,7 +655,7 @@
             // if (position.distance(planet) <= planet.radius + 12 && alive) {
             //     alive = false;
             // }
-            spaceRocket.checkCollisions();
+            //spaceRocket.checkCollisions();
 
             if (alive) {
                 kerb.texture = id["Space Tilesheet 22.aseprite"];
@@ -661,21 +670,21 @@
                 }
                 delta *= timeWarp;
 
-                fuelBar.outer.width = clamp(lerp(0, 200, fuel / maxFuel), 0, 200);
+                fuelBar.outer.width = clamp(lerp(0, 200, spaceRocket.fuel / spaceRocket.fuelMax), 0, 200);
 
                 // Inputs
                 if (up.isDown) {
                     launched = true
-                    if (fuel > 0) {
+                    if (spaceRocket.fuel > 0) {
                         if (launched) {
-                            velocity.x += Math.cos(rocket.rotation - Math.PI / 2) * thrust / spaceRocket.mass / 60 * delta;
-                            velocity.y += Math.sin(rocket.rotation - Math.PI / 2) * thrust / spaceRocket.mass / 60 * delta;
-                            fuel = clamp(fuel - thrust * delta, 0, maxFuel);
+                            velocity.x += Math.cos(rocket.rotation - Math.PI / 2) * spaceRocket.thrust / spaceRocket.mass / 60 * delta;
+                            velocity.y += Math.sin(rocket.rotation - Math.PI / 2) * spaceRocket.thrust / spaceRocket.mass / 60 * delta;
+                            spaceRocket.fuel = clamp(spaceRocket.fuel - spaceRocket.thrust * delta, 0, spaceRocket.fuelMax);
                         }
                         animate(rocket, "Thrust", true, delta);
                     }
                 } else {
-                    animate(rocket, "Idle", true);
+                    //animate(rocket, "Idle", true);
                 }
                 if (down.isDown) {
                     angularVelocity *= (1 - brakingForce) / delta;
@@ -683,25 +692,25 @@
 
                 if (launched) {
                     if (left.isDown) {
-                        angularVelocity -= rotationSpeed;
+                        angularVelocity -= rotationSpeed / spaceRocket.mass;
                     }
                     if (right.isDown) {
-                        angularVelocity += rotationSpeed;
+                        angularVelocity += rotationSpeed / spaceRocket.mass;
                     }
 
                     velocity = velocity.add(gravity(position).multiply(delta));
 
                     position.x += velocity.x * delta;
                     position.y += velocity.y * delta;
-                    rocket.rotation += angularVelocity * delta;
+                    rocket.container.rotation += angularVelocity * delta;
 
                     //velocity.x *= 1-drag;
                     //velocity.y *= 1-drag;
                     angularVelocity *= 1 - drag;
                 }
 
-                rocket.x = position.x;
-                rocket.y = position.y;
+                rocket.container.x = position.x;
+                rocket.container.y = position.y;
 
                 if (altitude / 1000 < velocity.magnitude() * 2) {
                     if (collisionCourse && apoapsis === position) {
@@ -714,7 +723,7 @@
                 // If Dead
             } else {
                 animate(kerb, "KIA");
-                animate(rocket, "Explosion");
+                //animate(rocket, "Explosion");
                 setTimeout(function() {
                     location.reload()
                 }, 4000);
@@ -739,8 +748,8 @@
             // Camera
 
             app.stage.scale.set(1 / zoom);
-            app.stage.pivot.x = rocket.position.x - innerWidth / 2 * zoom;
-            app.stage.pivot.y = rocket.position.y - innerHeight / 2 * zoom;
+            app.stage.pivot.x = rocket.container.position.x - innerWidth / 2 * zoom;
+            app.stage.pivot.y = rocket.container.position.y - innerHeight / 2 * zoom;
 
             // GUI
 
@@ -755,7 +764,7 @@
                 altitudeText.text = "Altitude: " + (altitude).toFixed(2) + "M";
             }
 
-            heading.updatePoints([Vector.zero, Vector.zero.radToVector(rocket.rotation - Math.PI / 2).normalized().multiply(16)]);
+            heading.updatePoints([Vector.zero, Vector.zero.radToVector(rocket.container.rotation - Math.PI / 2).normalized().multiply(16)]);
 
             timeWarpText.alpha = clamp(timeWarpText.alpha - 4 / (60 * 3 /* <-- Time to fade */ ), 0, 4);
         }
@@ -936,27 +945,22 @@
             world.visible = true;
             VAB.visible = false;
             ghost.visible = false;
-            spaceShip.elements.map(a => a.map(e => {
+            spaceRocket.parts.map(a => a.map(e => {
                 if (e !== undefined) e.tint = 0xFFFFFF
             }));
             spaceRocket.calculateProperties();
-            maxFuel = spaceRocket.fuel;
-            maxThrust = spaceRocket.thrust;
-            fuel = maxFuel;
-            thrust = maxThrust;
-
-            spaceShip.position.x = 0;
-            spaceShip.elements.map(a => a.map(e => {
+            spaceRocket.container.position.x = 0;
+            spaceRocket.parts.map(a => a.map(e => {
                 if (e !== undefined) {
                     e.x -= 24;
                     e.y -= 48;
                 }
             }))
-            rocket = spaceShip;
-            spaceShip.scale.set(0.25);
+            rocket = spaceRocket;
+            spaceRocket.container.scale.set(0.25);
 
-            world.addChild(rocket);
-            spaceShip.position.y = -637100;
+            world.addChild(rocket.container);
+            spaceRocket.container.position.y = -637100;
         }
     </script>
 </body>
