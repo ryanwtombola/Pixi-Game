@@ -120,6 +120,12 @@
             toLocal() {
                 return this.add(new Vector(app.stage.pivot.x, app.stage.pivot.y))
             }
+            rotate(radians) {
+                return new Vector(
+                    this.x * Math.cos(radians) - this.y * Math.sin(radians),
+                    this.x * Math.sin(radians) + this.y * Math.cos(radians)
+                );
+            }
         }
 
         class Line extends PIXI.Graphics {
@@ -200,7 +206,6 @@
         class Rocket {
             constructor(x, y, width, height) {
                 this.container = new Container();
-                this.container.position.set(x, y);
 
                 this.parts = [
                     [width],
@@ -213,9 +218,27 @@
                 this.fuel;
                 this.fuelMax;
                 this.thrust;
+
+                this.position = new Vector(x, y);
+                this.rotation = 0.5;
+                this.velocity = Vector.zero;
+                this.angularVelocity;
+                this.scale = 0.5;
+
+                this.move();
+            }
+
+            move() {
+                this.position.add(this.velocity);
+                this.container.position.set(this.position.x, this.position.y);
+                this.container.rotation = this.rotation;
+                this.container.scale.set(this.scale);
             }
 
             placePart(part, x, y) {
+                if (x < 0 || y < 0 || x >= this.parts.length || y >= this.parts[x].length) {
+                    return;
+                }
                 if (this.parts[x][y] === undefined) {
                     this.parts[x][y] = Object.assign(new part.constructor, part);
                     this.parts[x][y].addPart(x, y, this.container);
@@ -230,8 +253,6 @@
                 this.mass = 0;
                 this.fuel = 0;
                 this.thrust = 0;
-
-                console.clear();
 
                 this.parts.map(y => y.map(part => {
                     if (part !== undefined) {
@@ -248,28 +269,35 @@
 
                 let mx = 0,
                     my = 0;
-
                 for (let x = 0; x < this.parts.length; x++) {
-
                     for (let y = 0; y < this.parts[0].length; y++) {
                         const part = this.parts[x][y];
-
                         if (part !== undefined) {
                             mx += part.mass * x;
                             my += part.mass * y;
                         }
                     }
                 }
-
                 this.COM = new Vector(mx / this.mass, my / this.mass);
-                console.log(this.COM);
 
+                // console.clear();
                 // console.log(`Mass: ${this.mass} Fuel: ${this.fuel} Thrust: ${this.thrust}`);
                 // console.log(`Thrust to Weight: ${this.thrust / this.mass}`);
             }
 
             worldPos(value) {
-                return new Vector((value.x + 0.5) * 16 + this.container.x, (value.y + 0.5) * 16 + this.container.y);
+                let pos = value.add(0.5).multiply(16 * this.scale);
+                return this.position.add(pos.rotate(this.rotation));
+            }
+
+            localPos(value) {
+
+                // FIX THIS SHITTT!!!!!!!!
+
+                let pos = value.rotate(-this.rotation).divide(16 * this.scale).divide(8).subtract(this.position.divide(16 * this.scale)) //value.divide(16).subtract(this.position.multiply(this.scale)).multiply(this.scale);
+                console.log(pos.floor());
+                return pos;
+
             }
 
             // checkCollisions() {
@@ -387,7 +415,6 @@
 
         // This will run when the image has loaded
         function setup() {
-
             // Create an alias called id for all the textures
             id = resources["Assets/space-spritesheet.json"].textures;
 
@@ -403,7 +430,7 @@
             app.stage.addChild(vab);
             vab.scale.set(8);
 
-            spaceRocket = new Rocket(0, 0, 3, 6);
+            spaceRocket = new Rocket((window.innerWidth / 2 / 8) - 24, 0, 3, 6);
             vab.addChild(spaceRocket.container);
             spaceRocket.placePart(cabin, 1, 1);
             spaceRocket.placePart(tank, 1, 2);
@@ -416,7 +443,7 @@
             spaceRocket.container.addChild(ghost);
 
             COMIcon = new Graphics();
-            COMIcon.beginFill(0xFFFFFF).drawCircle(0, 0, 2).endFill();
+            COMIcon.beginFill(0xFFFF60).lineStyle(0.5, 0x2a262e).drawCircle(0, 0, 1.4).endFill();
             vab.addChild(COMIcon);
 
             // --- World Elements --- //
@@ -619,16 +646,15 @@
         // -----------------------------------------------======== Play ========----------------------------------------------- //
 
         function VAB(delta) {
-            spaceRocket.container.x = (window.innerWidth / 2 / 8) - 24;
             let COMPos = spaceRocket.worldPos(spaceRocket.COM);
-            console.log(COMPos.x)
-            if (COMPos.x !== NaN) {
+            if (!isNaN(COMPos.x)) {
                 COMIcon.position.set(COMPos.x, COMPos.y);
                 COMIcon.visible = true;
             } else {
                 COMIcon.visible = false;
             }
-            mouseGrid = worldMousePos.subtract(Vector.one.multiply(spaceRocket.container).multiply(8)).divide(16 * 8).floor()
+            //mouseGrid = worldMousePos.subtract(Vector.one.multiply(spaceRocket.container).multiply(8)).divide(16 * 8).floor()
+            mouseGrid = spaceRocket.localPos(worldMousePos).floor();
             ghost.x = mouseGrid.x * 16;
             ghost.y = mouseGrid.y * 16;
 
@@ -949,7 +975,6 @@
                 if (e !== undefined) e.tint = 0xFFFFFF
             }));
             spaceRocket.calculateProperties();
-            spaceRocket.container.position.x = 0;
             spaceRocket.parts.map(a => a.map(e => {
                 if (e !== undefined) {
                     e.x -= 24;
@@ -957,10 +982,9 @@
                 }
             }))
             rocket = spaceRocket;
-            spaceRocket.container.scale.set(0.25);
 
             world.addChild(rocket.container);
-            spaceRocket.container.position.y = -637100;
+            spaceRocket.position.y = -637100;
         }
     </script>
 </body>
