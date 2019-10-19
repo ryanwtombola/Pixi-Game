@@ -96,6 +96,7 @@ class Rocket {
         this.mass = 0;
         this.fuel = 0;
         this.thrust = 0;
+        this.height = 0;
 
         this.parts.map(y =>
             y.map(part => {
@@ -120,7 +121,7 @@ class Rocket {
                 if (part !== undefined) {
                     mx += part.mass * x;
                     my += part.mass * y;
-                    if (y > this.height)
+                    if (y + 1 > this.height)
                         this.height = y + 1;
                 }
             }
