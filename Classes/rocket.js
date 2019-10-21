@@ -4,28 +4,53 @@ class Part {
     constructor(spriteName, attachments, mass) {
         this.sprite;
         this.parent;
+        this.container;
         this.spriteName = spriteName;
         this.attachments = attachments;
         this.mass = mass;
+        this.position = Vector.zero;
     }
 
     addPart(x, y, parent) {
+        this.position = new Vector(x, y);
+
         this.parent = parent;
+        this.container = parent.container;
         this.sprite = new Sprite(id[this.spriteName]);
         this.sprite.position.set(x, y);
         this.sprite.scale.set(1 / 16);
-        this.parent.addChild(this.sprite);
+        this.container.addChild(this.sprite);
     }
 
     removePart() {
-        this.parent.removeChild(this.sprite);
+        this.container.removeChild(this.sprite);
+    }
+
+    destroy() {
+        let explosion = new Sprite(id[this.spriteName]);
+        let worldPos = this.parent.worldPos(this.position.subtract(this.parent.COM.add(Vector.half)));
+        explosion.scale.set(0.25);
+        let explosionPos = worldPos.subtract(new Vector(explosion.width / 2, explosion.height - 2));
+        explosion.position.set(explosionPos.x, explosionPos.y);
+        explosion.rotation = gravity(worldPos).toRad();
+        world.addChild(explosion);
+        this.removePart();
+        return explosion;
     }
 }
 
 class FuelTank extends Part {
-    constructor(spriteName, attachments, mass, fuel) {
-        super(spriteName, attachments, mass);
+    constructor(spriteName, attachments, dryMass, wetMass, fuel) {
+        super(spriteName, attachments, wetMass);
+        this.dryMass = dryMass;
+        this.wetMass = wetMass;
         this.fuel = fuel;
+        this.fuelMax = fuel;
+    }
+
+    drain(amount) {
+        this.fuel = clamp(this.fuel - amount, 0, this.fuelMax);
+        this.mass = lerp(this.dryMass, this.wetMass, this.fuel / this.fuelMax);
     }
 }
 
@@ -45,15 +70,16 @@ class Cabin extends Part {
 class Rocket {
     constructor(x, y, width, height) {
         this.container = new Container();
-
-
         this.width = width;
         this.height = height;
         this.parts = [
-            [width],
-            [height]
+            [],
+            []
         ];
         this.parts = [...Array(width)].map(e => Array(height).fill(undefined));
+        this.fuelTanks = [];
+        this.engines = [];
+        this.destroyedParts = [];
 
         this.mass;
         this.COM;
@@ -67,15 +93,36 @@ class Rocket {
         this.angularVelocity = 0;
         this.scale = 16 * 8;
 
+        this.calculateProperties();
         this.move();
     }
 
-    move() {
-        this.position = this.position.add(this.velocity);
-        this.rotation += this.angularVelocity;
+    move(delta) {
+        if (delta === undefined)
+            delta = 1;
+        this.position = this.position.add(this.velocity.multiply(delta));
+        this.rotation += this.angularVelocity * 1;
         this.container.position.set(this.position.x, this.position.y);
         this.container.rotation = this.rotation;
         this.container.scale.set(this.scale);
+    }
+
+    thrusts(delta) {
+        if (delta === undefined)
+            delta = 1;
+
+        if (this.fuelTanks.length !== 0) {
+            this.engines.forEach(e => this.velocity = this.velocity.add(Vector.down.rotate(this.rotation).multiply(e.thrust).divide(this.mass * 60)).multiply(delta));
+            //console.log(this.fuelTanks.map(f => f.fuel.toFixed(2)));
+            this.fuel = 0;
+            this.fuelTanks.forEach(t => {
+                if (t !== undefined) {
+                    t.drain(rocket.thrust / this.fuelTanks.length);
+                    this.fuel += t.fuel;
+                }
+            });
+            this.changeCOM();
+        }
     }
 
     placePart(part, x, y) {
@@ -84,7 +131,7 @@ class Rocket {
         }
         if (this.parts[x][y] === undefined) {
             this.parts[x][y] = Object.assign(new part.constructor(), part);
-            this.parts[x][y].addPart(x, y, this.container);
+            this.parts[x][y].addPart(x, y, this);
         } else {
             this.parts[x][y].removePart();
             this.parts[x][y] = undefined;
@@ -95,23 +142,11 @@ class Rocket {
     calculateProperties() {
         this.mass = 0;
         this.fuel = 0;
+        this.fuelMax = 0;
         this.thrust = 0;
         this.height = 0;
-
-        this.parts.map(y =>
-            y.map(part => {
-                if (part !== undefined) {
-                    this.mass += part.mass;
-
-                    if (part.constructor.name === "FuelTank") {
-                        this.fuel += part.fuel;
-                        this.fuelMax = this.fuel;
-                    } else if (part.constructor.name === "Engine") {
-                        this.thrust += part.thrust;
-                    }
-                }
-            })
-        );
+        this.fuelTanks = [];
+        this.engines = [];
 
         let mx = 0,
             my = 0;
@@ -119,6 +154,17 @@ class Rocket {
             for (let y = 0; y < this.parts[0].length; y++) {
                 const part = this.parts[x][y];
                 if (part !== undefined) {
+                    this.mass += part.mass;
+
+                    if (part.constructor.name === "FuelTank") {
+                        this.fuelTanks.push(part);
+                        this.fuel += part.fuel;
+                        this.fuelMax += part.fuelMax;
+                    } else if (part.constructor.name === "Engine") {
+                        this.engines.push(part);
+                        this.thrust += part.thrust;
+                    }
+
                     mx += part.mass * x;
                     my += part.mass * y;
                     if (y + 1 > this.height)
@@ -138,8 +184,6 @@ class Rocket {
         return this.position.add(Vector.zero.toVector(value).add(Vector.half).rotate(this.rotation).multiply(this.scale))
     }
 
-
-
     localPos(value) {
         let pos = value
             .subtract(this.position)
@@ -156,7 +200,7 @@ class Rocket {
                 if (this.parts[x][y] !== undefined) {
                     partCount++;
                     if (this.worldPos(this.parts[x][y].sprite).distance(planet) <= planet.radius + 2 && alive) {
-                        this.parts[x][y].removePart();
+                        this.destroyedParts.push(this.parts[x][y].destroy());
                         this.parts[x][y] = undefined;
                         this.changeCOM();
                     }

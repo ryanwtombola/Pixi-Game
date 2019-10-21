@@ -67,8 +67,8 @@ request.onload = function() {
 request.send();
 
 const drag = 0.02,
-    rotationSpeed = 0.0005,
-    brakingForce = 0.05;
+    rotationSpeed = 0.01 //0.001,
+brakingForce = 0.05;
 
 let vab, spaceShip, ghost, mouseGrid;
 
@@ -95,10 +95,10 @@ let timeWarp = 1,
     timeWarpIndex = 0,
     timeWarps = [1, 2, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000];
 
-let cabin = new Cabin("Space Tilesheet 27.aseprite", [0, 0, 1, 0], 0.1);
-let tank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 1, 600);
-let lightweightTank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 0.5, 300);
-let engine = new Engine("Space Tilesheet 29.aseprite", [1, 0, 2, 0], 1, 1);
+let cabin = new Cabin("Space Tilesheet 27.aseprite", [0, 0, 1, 0], 0.4);
+let tank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 0.5, 4, 8000);
+//let lightweightTank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 0.5, 300);
+let engine = new Engine("Space Tilesheet 29.aseprite", [1, 0, 2, 0], 0.6, 5);
 let partIndex = 0;
 let parts = [cabin, tank, engine];
 
@@ -380,7 +380,7 @@ function World(delta) {
 
     if (alive) {
         rocket.checkCollisions();
-        camera = Vector.zero.lerp(camera.add(rocket.velocity), Vector.zero.toVector(rocket.position), 0.2);
+        camera = Vector.zero.lerp(camera, Vector.zero.toVector(rocket.position), 0.05).add(rocket.velocity);
 
         kerb.texture = id["Space Tilesheet 22.aseprite"];
 
@@ -401,9 +401,7 @@ function World(delta) {
             launched = true;
             if (rocket.fuel > 0) {
                 if (launched) {
-                    rocket.velocity.x += ((Math.cos(rocket.rotation - Math.PI / 2) * rocket.thrust) / rocket.mass / 60) * delta;
-                    rocket.velocity.y += ((Math.sin(rocket.rotation - Math.PI / 2) * rocket.thrust) / rocket.mass / 60) * delta;
-                    rocket.fuel = clamp(rocket.fuel - rocket.thrust * delta, 0, rocket.fuelMax);
+                    rocket.thrusts(delta);
                 }
                 //animate(, "Thrust", true, delta);
             }
@@ -424,7 +422,7 @@ function World(delta) {
 
             rocket.velocity = rocket.velocity.add(gravity(rocket.position).multiply(delta));
 
-            rocket.move();
+            rocket.move(delta);
             //velocity.x *= 1-drag;
             //velocity.y *= 1-drag;
             rocket.angularVelocity *= 1 - drag;
@@ -448,7 +446,6 @@ function World(delta) {
         // If Dead
     } else {
         animate(kerb, "KIA");
-        //animate(rocket, "Explosion");
         setTimeout(function() {
             location.reload();
         }, 4000);
@@ -459,6 +456,10 @@ function World(delta) {
             changeTimeWarpText(timeWarp + "x TimeWarp");
         }
     }
+
+    rocket.destroyedParts.forEach(d => {
+        animate(d, "Explosion");
+    });
 
     map.alpha = clamp((zoom - mapThreshold + mapTransition / 2) / mapTransition, 0, 1);
 
