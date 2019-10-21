@@ -55,10 +55,22 @@ class FuelTank extends Part {
 }
 
 class Engine extends Part {
-    constructor(spriteName, attachments, mass, thrust) {
+    constructor(spriteName, attachments, mass, thrust, plumeSpriteName) {
         super(spriteName, attachments, mass);
         this.thrust = thrust;
+        this.plumeSpriteName = plumeSpriteName;
+        this.plume;
     }
+
+    addPart(x, y, parent) {
+        super.addPart(x, y, parent);
+        this.plume = new Sprite(id[this.plumeSpriteName]);
+        this.plume.position.set(0, 16)
+        this.sprite.addChild(this.plume);
+        this.plume.visible = false;
+    }
+
+
 }
 
 class Cabin extends Part {
@@ -112,12 +124,15 @@ class Rocket {
             delta = 1;
 
         if (this.fuelTanks.length !== 0) {
-            this.engines.forEach(e => this.velocity = this.velocity.add(Vector.down.rotate(this.rotation).multiply(e.thrust).divide(this.mass * 60)).multiply(delta));
+            this.engines.forEach(e => {
+                this.velocity = this.velocity.add(Vector.down.rotate(this.rotation).multiply(e.thrust * delta).divide(this.mass * 60));
+                e.plume.visible = true;
+            });
             //console.log(this.fuelTanks.map(f => f.fuel.toFixed(2)));
             this.fuel = 0;
             this.fuelTanks.forEach(t => {
                 if (t !== undefined) {
-                    t.drain(rocket.thrust / this.fuelTanks.length);
+                    t.drain(rocket.thrust / this.fuelTanks.length * delta);
                     this.fuel += t.fuel;
                 }
             });

@@ -37,6 +37,7 @@ app.renderer.resize(window.innerWidth, window.innerHeight);
 PIXI.loader
     .add("Assets/space-spritesheet.json")
     .add("Assets/Launchpad Mockup.png")
+    .add("Assets/VAB.png")
     .load(setup);
 
 let left = keyboard("a"),
@@ -67,8 +68,8 @@ request.onload = function() {
 request.send();
 
 const drag = 0.02,
-    rotationSpeed = 0.01 //0.001,
-brakingForce = 0.05;
+    rotationSpeed = 0.002,
+    brakingForce = 0.05;
 
 let vab, spaceShip, ghost, mouseGrid;
 
@@ -87,8 +88,8 @@ let state,
     altitude,
     planet;
 let zoom = 0.05,
-    mapThreshold = 10,
-    mapTransition = 10;
+    mapThreshold = 5,
+    mapTransition = 6;
 let worldMousePos = Vector.zero,
     localMousePos = Vector.zero;
 let timeWarp = 1,
@@ -98,7 +99,7 @@ let timeWarp = 1,
 let cabin = new Cabin("Space Tilesheet 27.aseprite", [0, 0, 1, 0], 0.4);
 let tank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 0.5, 4, 8000);
 //let lightweightTank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 0.5, 300);
-let engine = new Engine("Space Tilesheet 29.aseprite", [1, 0, 2, 0], 0.6, 5);
+let engine = new Engine("Space Tilesheet 29.aseprite", [1, 0, 2, 0], 0.6, 5, "Space Tilesheet 30.aseprite");
 let partIndex = 0;
 let parts = [cabin, tank, engine];
 
@@ -124,7 +125,11 @@ function setup() {
     vab = new Container();
     app.stage.addChild(vab);
 
-    rocket = new Rocket(innerWidth / 2 - 3 / 2 * 16 * 8, 0, 3, 6);
+    let vabBackground = new Sprite(resources["Assets/VAB.png"].texture);
+    vabBackground.scale.set(8)
+    vab.addChild(vabBackground);
+
+    rocket = new Rocket(2 * 16 * 8, 16 * 8, 3, 6);
     vab.addChild(rocket.container);
     rocket.placePart(cabin, 1, 1);
     rocket.placePart(tank, 1, 2);
@@ -378,9 +383,11 @@ function VAB(delta) {
 
 function World(delta) {
 
+    delta *= timeWarp;
+
     if (alive) {
         rocket.checkCollisions();
-        camera = Vector.zero.lerp(camera, Vector.zero.toVector(rocket.position), 0.05).add(rocket.velocity);
+        camera = Vector.zero.lerp(camera, Vector.zero.toVector(rocket.position), 0.05).add(rocket.velocity.multiply(delta));
 
         kerb.texture = id["Space Tilesheet 22.aseprite"];
 
@@ -392,15 +399,17 @@ function World(delta) {
                 changeTimeWarpText(timeWarp + "x TimeWarp");
             }
         }
-        delta *= timeWarp;
+
 
         fuelBar.outer.width = clamp(lerp(0, 200, rocket.fuel / rocket.fuelMax), 0, 200);
 
+        rocket.engines.forEach(e => e.plume.visible = false);
         // Inputs
         if (up.isDown) {
             launched = true;
             if (rocket.fuel > 0) {
                 if (launched) {
+
                     rocket.thrusts(delta);
                 }
                 //animate(, "Thrust", true, delta);
