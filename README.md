@@ -1,5 +1,5 @@
 # Pixi-Game
-You start in the Vehicle Assembley Building (VAB) where you start with a pre-assembled rocket which you can edit to your liking or scrap entirely.
+You start in the Vehicle Assembley Building (VAB) with a pre-assembled rocket which you can edit to your liking or scrap entirely.
 
 You can place a part by hovering over where you want to place it and using the scroll wheel to select a part then placing it with left click.
 
