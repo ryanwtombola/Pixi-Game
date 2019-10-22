@@ -126,6 +126,10 @@ function clamp(num, min, max) {
     return num <= min ? min : num >= max ? max : num;
 }
 
+function loop(num, min, max) {
+    return num < min ? max : num > max ? min : num;
+}
+
 function changeTimeWarpText(text) {
     timeWarpText.alpha = 4;
     timeWarpText.text = text;

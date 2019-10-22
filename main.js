@@ -48,14 +48,23 @@ keyM = keyboard("m");
 comma = keyboard("q");
 period = keyboard("e");
 
-window.addEventListener(
-    "mousemove",
-    e => {
-        worldMousePos = new Vector(e.clientX, e.clientY);
-    },
-    false
-);
-window.addEventListener("wheel", event => (zoom *= 1 + event.deltaY / 5000));
+window.addEventListener("mousemove", e => { worldMousePos = new Vector(e.clientX, e.clientY); }, false);
+window.addEventListener("wheel", event => {
+    zoom *= 1 + event.deltaY / 5000;
+    if (state.name === "VAB") {
+        partScroll = loop(partScroll + event.deltaY / 60, 0, parts.length - 0.01);
+        partIndex = Math.floor(partScroll)
+        ghost.texture = id[parts[partIndex].spriteName];
+    }
+});
+
+window.addEventListener("click", click => {
+    if (state.name === "VAB") {
+        let x = mouseGrid.x,
+            y = mouseGrid.y;
+        rocket.placePart(parts[partIndex], x, y);
+    }
+});
 
 // -----------------------------------------------======== Setup ========----------------------------------------------- //
 
@@ -68,7 +77,7 @@ request.onload = function() {
 request.send();
 
 const drag = 0.02,
-    rotationSpeed = 0.002,
+    rotationSpeed = 0.001,
     brakingForce = 0.05;
 
 let vab, spaceShip, ghost, mouseGrid;
@@ -81,7 +90,7 @@ var line,
     fuelBar,
     collisionCourse = false,
     COMIcon;
-var GUI, velocityText, altitudeText, fuelText, headingText, timeWarpText;
+var GUI, velocityText, altitudeText, fuelText, headingText, timeWarpText, instructionText, instructionText2;
 let state,
     alive = true,
     launched,
@@ -100,14 +109,11 @@ let cabin = new Cabin("Space Tilesheet 27.aseprite", [0, 0, 1, 0], 0.4);
 let tank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 0.5, 4, 8000);
 //let lightweightTank = new FuelTank("Space Tilesheet 28.aseprite", [1, 2, 1, 2], 0.5, 300);
 let engine = new Engine("Space Tilesheet 29.aseprite", [1, 0, 2, 0], 0.6, 5, "Space Tilesheet 30.aseprite");
-let partIndex = 0;
+let partIndex = 0,
+    partScroll = 0;
 let parts = [cabin, tank, engine];
 
 let rocket, camera = Vector.zero;
-
-// for (let i = 0; i < rocket.parts[1].length; i++) {
-//     console.log(rocket.parts[1]);
-// }
 
 // This will run when the image has loaded
 function setup() {
@@ -120,6 +126,22 @@ function setup() {
         fill: "white"
     });
 
+    let style2 = new TextStyle({
+        fontFamily: "Arial",
+        fontSize: 32,
+        fill: "#333941",
+        wordWrap: true,
+        wordWrapWidth: window.innerWidth - 99 * 8
+    });
+
+    let style3 = new TextStyle({
+        fontFamily: "Arial",
+        fontSize: 30,
+        fill: "white",
+        //wordWrap: true,
+        //wordWrapWidth: window.innerWidth - 99 * 8
+    });
+
     // --- Vehicle Assembley Building --- //
 
     vab = new Container();
@@ -129,13 +151,17 @@ function setup() {
     vabBackground.scale.set(8)
     vab.addChild(vabBackground);
 
-    rocket = new Rocket(2 * 16 * 8, 16 * 8, 3, 6);
+    instructionText = new Text("Click within the building area to add or remove a part. \n\nUse the scroll wheel to cycle between the different parts. \n\nYou can add a Rocket Engine, Fuel Tank and a Crew Cabin. \n\nPress M when you are ready to launch!", style2);
+    vab.addChild(instructionText);
+    instructionText.position = new Vector(99 * 8, 45 * 8);
+
+    rocket = new Rocket(8 * 8, 8 * 8, 3, 5);
     vab.addChild(rocket.container);
-    rocket.placePart(cabin, 1, 1);
+    rocket.placePart(cabin, 1, 0);
+    rocket.placePart(tank, 1, 1);
     rocket.placePart(tank, 1, 2);
     rocket.placePart(tank, 1, 3);
-    rocket.placePart(tank, 1, 4);
-    rocket.placePart(engine, 1, 5);
+    rocket.placePart(engine, 1, 4);
 
     ghost = new Sprite(id[parts[partIndex].spriteName]);
     ghost.scale.set(1 / 16)
@@ -197,6 +223,10 @@ function setup() {
     // GUI Container
     GUI = new Container();
     world.addChild(GUI);
+
+    instructionText2 = new Text("Press W to launch. \nUse A & D to rotate. \nPress M for map and\nuse scroll to zoom.", style);
+    GUI.addChild(instructionText2);
+    instructionText2.position = new Vector(window.innerWidth - 350, 0);
 
     // Velocity
     velocityText = new Text("Velocity: ", style);
@@ -267,20 +297,12 @@ function setup() {
     keyM.press = () => {
         if (state.name === "World") {
             if (zoom > mapThreshold) {
-                zoom = 0.2;
+                zoom = 0.05;
             } else if (zoom <= mapThreshold) {
                 zoom = 3000;
             }
         } else {
             launch();
-        }
-    };
-
-    up.press = () => {
-        if (state.name === "VAB") {
-            let x = mouseGrid.x,
-                y = mouseGrid.y;
-            rocket.placePart(parts[partIndex], x, y);
         }
     };
 
@@ -290,11 +312,6 @@ function setup() {
                 timeWarpIndex--;
                 timeWarp = timeWarps[timeWarpIndex];
                 changeTimeWarpText(timeWarp + "x TimeWarp");
-            }
-        } else {
-            if (partIndex > 0) {
-                partIndex--;
-                ghost.texture = id[parts[partIndex].spriteName];
             }
         }
     };
@@ -320,11 +337,6 @@ function setup() {
                 } else {
                     changeTimeWarpText(timeWarp + "x TimeWarp");
                 }
-            }
-        } else {
-            if (partIndex < parts.length - 1) {
-                partIndex++;
-                ghost.texture = id[parts[partIndex].spriteName];
             }
         }
     };
