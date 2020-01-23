@@ -111,3 +111,98 @@ class Vector {
         );
     }
 }
+
+class Line extends PIXI.Graphics {
+    constructor(points, lineSize, lineColor) {
+        super();
+
+        var s = (this.lineWidth = lineSize || 5);
+        var c = (this.lineColor = lineColor || "0x000000");
+
+        this.points = points;
+
+        this.lineStyle(s, c);
+
+        this.moveTo(points[0].x, points[0].y);
+        this.lineTo(points[1].x, points[1].y);
+    }
+
+    updatePoints(p) {
+        var points = (this.points = p.map(
+            (val, index) => val || this.points[index]
+        ));
+
+        var s = this.lineWidth;
+        var c = this.lineColor;
+        
+        this.clear();
+
+        for (let i = 0; i < points.length - 1; i++) {
+            this.lineStyle(s, c, lerp(0.8, 0, i / (points.length - 1)));
+            this.moveTo(points[i].x, points[i].y);
+            this.lineTo(points[i + 1].x, points[i + 1].y);
+        }
+    }
+}
+
+// class Calc {
+//     clamp(num, min, max) {
+//         return num <= min ? min : num >= max ? max : num;
+//     }
+
+//     lerp(start, end, percent) {
+//         return (1 - percent) * start + percent * end
+//     }
+
+//     loop(num, min, max) {
+//         return num < min ? max : num > max ? min : num;
+//     }
+// }
+
+class Input {
+    keyboard(value) {
+        let key = {};
+        key.value = value;
+        key.isDown = false;
+        key.isUp = true;
+        key.press = undefined;
+        key.release = undefined;
+
+        // Key down handler
+        key.downHandler = event => {
+            if (event.key === key.value) {
+                if (key.isUp && key.press) key.press();
+                key.isDown = true;
+                key.isUp = false;
+                event.preventDefault();
+            }
+        };
+
+        // Key up handler
+        key.upHandler = event => {
+            if (event.key === key.value) {
+                if (key.isDown && key.release) key.release();
+                key.isDown = false;
+                key.isUp = true;
+                event.preventDefault();
+            }
+        }
+
+        // Attach event listeners
+        const downListner = key.downHandler.bind(key);
+        const upListner = key.upHandler.bind(key);
+
+
+        window.addEventListener("keydown", downListner, false);
+        window.addEventListener("keyup", upListner, false);
+
+        // Detach event listners
+        key.unsubscribe = () => {
+            window.removeEventListener("keydown", downListner);
+            window.removeEventListener("keyup", upListner);
+        };
+
+        return key;
+    }
+
+}
