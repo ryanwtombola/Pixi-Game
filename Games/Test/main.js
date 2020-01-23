@@ -38,10 +38,10 @@ app.renderer.resize(window.innerWidth, window.innerHeight);
 PIXI.loader
     .load(setup);
 
-let left = keyboard("a"),
-    right = keyboard("d"),
-    up = keyboard("w"),
-    down = keyboard("s");
+let left = Input.keyboard("a"),
+    right = Input.keyboard("d"),
+    up = Input.keyboard("w"),
+    down = Input.keyboard("s");
 
 window.addEventListener("mousemove", e => {
     worldMousePos = new Vector(e.clientX, e.clientY)

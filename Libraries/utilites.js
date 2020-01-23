@@ -145,19 +145,20 @@ class Line extends PIXI.Graphics {
     }
 }
 
-// class Calc {
-//     clamp(num, min, max) {
-//         return num <= min ? min : num >= max ? max : num;
-//     }
+class Calc {
+    clamp(num, min, max) {
+        return num <= min ? min : num >= max ? max : num;
+    }
 
-//     lerp(start, end, percent) {
-//         return (1 - percent) * start + percent * end
-//     }
+    lerp(start, end, percent) {
+        return (1 - percent) * start + percent * end
+    }
+    Math
 
-//     loop(num, min, max) {
-//         return num < min ? max : num > max ? min : num;
-//     }
-// }
+    loop(num, min, max) {
+        return num < min ? max : num > max ? min : num;
+    }
+}
 
 class Input {
     keyboard(value) {
