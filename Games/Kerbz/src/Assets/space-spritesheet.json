@@ -1,0 +1,265 @@
+{ "frames": {
+   "Space Tilesheet 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 12, "h": 13 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 0, "w": 12, "h": 13 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 1.aseprite": {
+    "frame": { "x": 13, "y": 0, "w": 12, "h": 15 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 0, "w": 12, "h": 15 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 2.aseprite": {
+    "frame": { "x": 26, "y": 0, "w": 12, "h": 16 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 0, "w": 12, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 3.aseprite": {
+    "frame": { "x": 39, "y": 0, "w": 12, "h": 16 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 0, "w": 12, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 4.aseprite": {
+    "frame": { "x": 52, "y": 0, "w": 14, "h": 14 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 1, "w": 14, "h": 14 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 5.aseprite": {
+    "frame": { "x": 67, "y": 0, "w": 14, "h": 14 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 1, "w": 14, "h": 14 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 6.aseprite": {
+    "frame": { "x": 82, "y": 0, "w": 14, "h": 14 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 1, "w": 14, "h": 14 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 7.aseprite": {
+    "frame": { "x": 0, "y": 17, "w": 12, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 1, "w": 12, "h": 12 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 8.aseprite": {
+    "frame": { "x": 13, "y": 17, "w": 14, "h": 13 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 1, "w": 14, "h": 13 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 9.aseprite": {
+    "frame": { "x": 28, "y": 17, "w": 14, "h": 13 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 1, "w": 14, "h": 13 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 10.aseprite": {
+    "frame": { "x": 43, "y": 17, "w": 14, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 2, "w": 14, "h": 12 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 11.aseprite": {
+    "frame": { "x": 58, "y": 17, "w": 12, "h": 13 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 1, "w": 12, "h": 13 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 12.aseprite": {
+    "frame": { "x": 71, "y": 17, "w": 13, "h": 13 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 1, "w": 13, "h": 13 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 13.aseprite": {
+    "frame": { "x": 85, "y": 17, "w": 12, "h": 13 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 1, "w": 12, "h": 13 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 14.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 0, "h": 0 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 0, "h": 0 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 15.aseprite": {
+    "frame": { "x": 0, "y": 31, "w": 9, "h": 8 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 4, "y": 4, "w": 9, "h": 8 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 16.aseprite": {
+    "frame": { "x": 10, "y": 31, "w": 14, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 2, "w": 14, "h": 12 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 17.aseprite": {
+    "frame": { "x": 25, "y": 31, "w": 12, "h": 8 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 4, "w": 12, "h": 8 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 18.aseprite": {
+    "frame": { "x": 38, "y": 31, "w": 16, "h": 15 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 15 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 19.aseprite": {
+    "frame": { "x": 55, "y": 31, "w": 14, "h": 14 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 1, "w": 14, "h": 14 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 20.aseprite": {
+    "frame": { "x": 70, "y": 31, "w": 14, "h": 16 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 0, "w": 14, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 21.aseprite": {
+    "frame": { "x": 85, "y": 31, "w": 14, "h": 16 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 0, "w": 14, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 22.aseprite": {
+    "frame": { "x": 0, "y": 48, "w": 16, "h": 15 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 1, "w": 16, "h": 15 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 23.aseprite": {
+    "frame": { "x": 17, "y": 48, "w": 16, "h": 15 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 1, "w": 16, "h": 15 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 24.aseprite": {
+    "frame": { "x": 34, "y": 48, "w": 16, "h": 15 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 1, "w": 16, "h": 15 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 25.aseprite": {
+    "frame": { "x": 51, "y": 48, "w": 16, "h": 16 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 1494
+   },
+   "Space Tilesheet 26.aseprite": {
+    "frame": { "x": 68, "y": 48, "w": 16, "h": 16 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 27.aseprite": {
+    "frame": { "x": 85, "y": 48, "w": 14, "h": 16 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 0, "w": 14, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 28.aseprite": {
+    "frame": { "x": 0, "y": 65, "w": 14, "h": 16 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 0, "w": 14, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 29.aseprite": {
+    "frame": { "x": 15, "y": 65, "w": 14, "h": 16 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 0, "w": 14, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   },
+   "Space Tilesheet 30.aseprite": {
+    "frame": { "x": 30, "y": 65, "w": 14, "h": 13 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 1, "y": 0, "w": 14, "h": 13 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 83
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.15",
+  "image": "space-spritesheet.png",
+  "format": "RGBA8888",
+  "size": { "w": 101, "h": 101 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "Idle", "from": 0, "to": 0, "direction": "forward" },
+   { "name": "Thrust", "from": 1, "to": 3, "direction": "forward" },
+   { "name": "Explosion", "from": 4, "to": 14, "direction": "forward" },
+   { "name": "KIA", "from": 25, "to": 26, "direction": "forward" }
+  ]
+ }
+}

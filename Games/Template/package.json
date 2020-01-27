@@ -1,0 +1,37 @@
+{
+  "name": "typescript-webpack-seed",
+  "version": "0.0.1",
+  "description": "A Starter Seed for TypeScript and Webpack Project",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack --mode development",
+    "start": "webpack-dev-server --mode development",
+    "tslint": "tslint -c tslint.json 'src/**/*.ts'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LordKenzo/TypeScript-Webpack-Seed.git"
+  },
+  "keywords": [
+    "typescript",
+    "webpack",
+    "seed",
+    "starterkit"
+  ],
+  "author": "Lorenzo Franceschini <lordkenzo@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LordKenzo/TypeScript-Webpack-Seed/issues"
+  },
+  "homepage": "https://github.com/LordKenzo/TypeScript-Webpack-Seed#readme",
+  "devDependencies": {
+    "awesome-typescript-loader": "^5.0.0",
+    "tslint": "^5.10.0",
+    "tslint-eslint-rules": "^5.3.1",
+    "typescript": "^2.9.1",
+    "webpack": "^4.10.2",
+    "webpack-cli": "^2.1.4",
+    "webpack-dev-server": "^3.1.4"
+  }
+}
