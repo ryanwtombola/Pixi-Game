@@ -35,69 +35,71 @@ export class Vector {
         return new Vector(Math.floor(this.x), Math.floor(this.y));
     }
 
-    clamp(minX, minY, maxX, maxY): Vector {
-        return new Vector(clamp(this.x, minX, maxX), clamp(this.y, minY, maxY));
+    clamp(minX: number, minY: number, maxX: number, maxY: number): Vector {
+        return new Vector(Calc.clamp(this.x, minX, maxX), Calc.clamp(this.y, minY, maxY));
     }
 
     // Caluclates the distance from one vector to another and returns a vector
-    distanceTo(target): Vector {
-        if (typeof target === "object") {
-            target = new Vector(target.x, target.y);
-        }
+    distanceTo(target: Vector): Vector {
         return new Vector(target.x - this.x, target.y - this.y);
     }
 
     // Calculates the direction to another vector and returns a normalized vector
-    directionTo(target): Vector {
-        if (typeof target === "object") {
-            target = new Vector(target.x, target.y);
-        }
+    directionTo(target: Vector): Vector {
         return this.distanceTo(target).normalized();
     }
 
     // Returns the distace to the target as a float (non directional)
-    distance(target): number {
-        if (typeof target === "object") {
-            target = new Vector(target.x, target.y);
-        }
+    distance(target: Vector): number {
         return this.distanceTo(target).magnitude();
     }
 
     // Takes two vectors and returns their sum
-    add(value): Vector {
-        if (typeof value === "number") {
-            value = new Vector(value, value);
-        }
+    add(value: Vector): Vector {
         return new Vector(this.x + value.x, this.y + value.y);
     }
+
+    addNum(value: number): Vector {
+        return new Vector(this.x + value, this.y + value);
+    }
+
     // Takes two vectors and subtracts one from the other
-    subtract(value): Vector {
-        if (typeof value === "number") {
-            value = new Vector(value, value);
-        }
+    subtract(value: Vector): Vector {
         return new Vector(this.x - value.x, this.y - value.y);
     }
+
+    subtractNum(value: number): Vector {
+        return new Vector(this.x - value, this.y - value);
+    }
+
     // Takes two vectors and returns their product
-    multiply(value): Vector {
-        if (typeof value === "number") {
-            value = new Vector(value, value);
-        }
+    multiply(value: Vector): Vector {
         return new Vector(this.x * value.x, this.y * value.y);
     }
+
+    multiplyNum(value: number): Vector {
+        return new Vector(this.x * value, this.y * value);
+    }
+
     // Divides a vetor by by another and returns a vector
-    divide(value): Vector {
-        if (typeof value === "number") {
-            value = new Vector(value, value);
-        }
+    divide(value: Vector): Vector {
         if (value.x != 0 && value.y != 0)
             return new Vector(this.x / value.x, this.y / value.y);
-        else return value.zero;
+        else
+            return Vector.zero;
+    }
+
+    divideNmu(value: number): Vector {
+        if (value != 0)
+            return new Vector(this.x / value, this.y / value);
+        else
+            return Vector.zero;
     }
 
     static lerp(start: Vector, end: Vector, percent: number): Vector {
         return new Vector(
-            lerp(start.x, end.x, percent),
-            lerp(start.y, end.y, percent)
+            Calc.lerp(start.x, end.x, percent),
+            Calc.lerp(start.y, end.y, percent)
         );
     }
 
@@ -106,7 +108,7 @@ export class Vector {
         return new Vector(Math.cos(value), Math.sin(value));
     }
 
-    static toVector(object): Vector {
+    static toVector(object: any): Vector {
         return new Vector(object.x, object.y);
     }
 
@@ -115,7 +117,7 @@ export class Vector {
         return Math.atan2(this.x, this.y);
     }
 
-    toLocal(appStagePivot): Vector {
+    toLocal(appStagePivot: any): Vector {
         return this.add(new Vector(appStagePivot.x, appStagePivot.y));
     }
 
