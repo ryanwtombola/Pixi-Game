@@ -45,7 +45,8 @@ loader
 let left = Input.keyboard("a"),
     right = Input.keyboard("d"),
     up = Input.keyboard("w"),
-    down = Input.keyboard("s");
+    down = Input.keyboard("s"),
+    mouse = Input.mouse()
 
 
 
@@ -67,9 +68,6 @@ let state: any,
     dragX = 0.5,
     dragXAir = 0.95,
     dragY = 0.9
-
-
-//window.addEventListener("wheel", event => zoom *= 1 + event.deltaY / 5000);
 
 // -----------------------------------------------======== Setup ========----------------------------------------------- //
 

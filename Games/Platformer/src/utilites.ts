@@ -143,10 +143,20 @@ export class Calc {
 }
 
 export class Input {
-    static mouse(worldMousePos: Vector) {
+    static mouse() {
+        let mouse: any = {};
+        mouse.screenPosition = Vector.zero;
+        mouse.wheel = 0;
+
         window.addEventListener("mousemove", e => {
-            worldMousePos = new Vector(e.clientX, e.clientY)
+            mouse.screenPosition = new Vector(e.clientX, e.clientY);
         }, false);
+
+        window.addEventListener("wheel", (event: any) => {
+            mouse.wheel = event.deltaY;
+        });
+
+        return mouse;
     }
 
     static keyboard(value: any) {
@@ -182,7 +192,6 @@ export class Input {
         // Attach event listeners
         const downListner = key.downHandler.bind(key);
         const upListner = key.upHandler.bind(key);
-
 
         window.addEventListener("keydown", downListner, false);
         window.addEventListener("keyup", upListner, false);
