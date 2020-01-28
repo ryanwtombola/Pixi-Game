@@ -131,12 +131,12 @@ export class Vector {
 }
 
 class Line extends PIXI.Graphics {
-    public lineWidth;
+    public lineWidth: number;
     public lineColor;
     
-    public points;
+    public points: Vector[];
 
-    constructor(points, lineSize, lineColor) {
+    constructor(points: Vector[], lineSize: number, lineColor) {
         super();
 
         var s = (this.lineWidth = lineSize || 5);
@@ -150,7 +150,7 @@ class Line extends PIXI.Graphics {
         super.lineTo(points[1].x, points[1].y);
     }
 
-    updatePoints(p) {
+    UpdatePoints(p) {
         var points = (this.points = p.map(
             (val, index) => val || this.points[index]
         ));
@@ -161,7 +161,7 @@ class Line extends PIXI.Graphics {
         super.clear();
 
         for (let i = 0; i < points.length - 1; i++) {
-            super.lineStyle(s, c, lerp(0.8, 0, i / (points.length - 1)));
+            super.lineStyle(s, c, Calc.lerp(0.8, 0, i / (points.length - 1)));
             super.moveTo(points[i].x, points[i].y);
             super.lineTo(points[i + 1].x, points[i + 1].y);
         }
