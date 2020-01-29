@@ -1,5 +1,3 @@
-import * as PIXI from 'pixi.js';
-
 export class Vector {
     public x: number;
     public y: number;
@@ -130,45 +128,7 @@ export class Vector {
 
 }
 
-class Line extends PIXI.Graphics {
-    public lineWidth: number;
-    public lineColor;
-    
-    public points: Vector[];
-
-    constructor(points: Vector[], lineSize: number, lineColor) {
-        super();
-
-        var s = (this.lineWidth = lineSize || 5);
-        var c = (this.lineColor = lineColor || "0x000000");
-
-        this.points = points;
-
-        super.lineStyle(s, c);
-
-        super.moveTo(points[0].x, points[0].y);
-        super.lineTo(points[1].x, points[1].y);
-    }
-
-    UpdatePoints(p) {
-        var points = (this.points = p.map(
-            (val, index) => val || this.points[index]
-        ));
-
-        var s = this.lineWidth;
-        var c = this.lineColor;
-
-        super.clear();
-
-        for (let i = 0; i < points.length - 1; i++) {
-            super.lineStyle(s, c, Calc.lerp(0.8, 0, i / (points.length - 1)));
-            super.moveTo(points[i].x, points[i].y);
-            super.lineTo(points[i + 1].x, points[i + 1].y);
-        }
-    }
-}
-
-class Calc {
+export class Calc {
     static clamp(num: number, min: number, max: number): number {
         return num <= min ? min : num >= max ? max : num;
     }
@@ -180,54 +140,4 @@ class Calc {
     static loop(num: number, min: number, max: number): number {
         return num < min ? max : num > max ? min : num;
     }
-}
-
-class Input {
-    keyboard(value: any) {
-        let key: any = {};
-        key.value = value;
-        key.isDown = false;
-        key.isUp = true;
-        key.press = undefined;
-        key.release = undefined;
-
-        // Key down handler
-        key.downHandler = event => {
-            if (event.key === key.value) {
-                if (key.isUp && key.press)
-                    key.press();
-                key.isDown = true;
-                key.isUp = false;
-                event.preventDefault();
-            }
-        };
-
-        // Key up handler
-        key.upHandler = event => {
-            if (event.key === key.value) {
-                if (key.isDown && key.release)
-                    key.release();
-                key.isDown = false;
-                key.isUp = true;
-                event.preventDefault();
-            }
-        }
-
-        // Attach event listeners
-        const downListner = key.downHandler.bind(key);
-        const upListner = key.upHandler.bind(key);
-
-
-        window.addEventListener("keydown", downListner, false);
-        window.addEventListener("keyup", upListner, false);
-
-        // Detach event listners
-        key.unsubscribe = () => {
-            window.removeEventListener("keydown", downListner);
-            window.removeEventListener("keyup", upListner);
-        };
-
-        return key;
-    }
-
 }

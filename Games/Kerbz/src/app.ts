@@ -1,10 +1,10 @@
-import * as PIXI from 'dist/pixi.js';
+import * as PIXI from 'pixi.js';
 import { Vector } from './utilites';
 
 // -----------------------------------------------======== PIXI ========----------------------------------------------- //
 
 // Preserves pixels when upscaling
-PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
+//PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 // Aliases
 let Application = PIXI.Application,
