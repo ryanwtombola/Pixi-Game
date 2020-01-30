@@ -1,6 +1,4 @@
-export class Vector {
-    public x: number;
-    public y: number;
+export class Vector extends PIXI.Point {
 
     static readonly zero: Vector = new Vector(0, 0);
     static readonly one: Vector = new Vector(1, 1);
@@ -12,8 +10,7 @@ export class Vector {
     static readonly left: Vector = new Vector(-1, 0);
 
     constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
+        super(x, y);
     }
 
     // Adds a vector to this vector
@@ -121,10 +118,6 @@ export class Vector {
             this.x * Math.cos(radians) - this.y * Math.sin(radians),
             this.x * Math.sin(radians) + this.y * Math.cos(radians)
         );
-    }
-
-    ToPixi(): PIXI.Point {
-        return new PIXI.Point(this.x, this.y);
     }
 
     // Converts an angle in radians to a vector

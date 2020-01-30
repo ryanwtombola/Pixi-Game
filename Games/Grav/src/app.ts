@@ -1,6 +1,6 @@
 import { Application, Loader } from './aliases';
-import Entity from './entity';
-import Camera from './entities/player';
+import { Entity, Component } from './entity';
+import Camera from './components/camera';
 import { mouse } from './input';
 import { Vector } from './utilites';
 
@@ -37,8 +37,11 @@ app.renderer.autoResize = true;
 Loader.load(Setup);
 
 function Setup(): void {
+    const camera = new Entity("Camera");
+    camera.components.push(new Camera(camera));
+
     const entities: Entity[] = [
-        new Camera()
+        camera
     ];
 
     // Call the start method on all entites when loaded
