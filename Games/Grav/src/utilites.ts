@@ -16,129 +16,153 @@ export class Vector {
         this.y = y;
     }
 
-    // Returns the magnitude of the vector
-    magnitude(): number {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-
-    // Returns the normalized vector (direction)
-    normalized(): Vector {
-        const magnitude: number = this.magnitude();
-        if (magnitude != 0)
-            return new Vector(this.x / magnitude, this.y / magnitude);
-        else return Vector.zero;
-    }
-
-    floor(): Vector {
-        return new Vector(Math.floor(this.x), Math.floor(this.y));
-    }
-
-    clamp(minX: number, minY: number, maxX: number, maxY: number): Vector {
-        return new Vector(Calc.clamp(this.x, minX, maxX), Calc.clamp(this.y, minY, maxY));
-    }
-
-    // Caluclates the distance from one vector to another and returns a vector
-    distanceTo(target: Vector): Vector {
-        return new Vector(target.x - this.x, target.y - this.y);
-    }
-
-    // Calculates the direction to another vector and returns a normalized vector
-    directionTo(target: Vector): Vector {
-        return this.distanceTo(target).normalized();
-    }
-
-    // Returns the distace to the target as a float (non directional)
-    distance(target: Vector): number {
-        return this.distanceTo(target).magnitude();
-    }
-
-    // Takes two vectors and returns their sum
-    add(value: Vector): Vector {
+    // Adds a vector to this vector
+    Add(value: Vector): Vector {
         return new Vector(this.x + value.x, this.y + value.y);
     }
 
-    addNum(value: number): Vector {
+    // Adds a number to both axis on this vector
+    AddNum(value: number): Vector {
         return new Vector(this.x + value, this.y + value);
     }
 
-    // Takes two vectors and subtracts one from the other
-    subtract(value: Vector): Vector {
+    // Subtracts a vector from this vector
+    Subtract(value: Vector): Vector {
         return new Vector(this.x - value.x, this.y - value.y);
     }
 
-    subtractNum(value: number): Vector {
+    // Subtracts a number from both axis on this vector
+    SubtractNum(value: number): Vector {
         return new Vector(this.x - value, this.y - value);
     }
 
-    // Takes two vectors and returns their product
-    multiply(value: Vector): Vector {
+    // Multiples this vector by another
+    Multiply(value: Vector): Vector {
         return new Vector(this.x * value.x, this.y * value.y);
     }
 
-    multiplyNum(value: number): Vector {
+    // Multiplies this vector by number
+    MultiplyNum(value: number): Vector {
         return new Vector(this.x * value, this.y * value);
     }
 
-    // Divides a vetor by by another and returns a vector
-    divide(value: Vector): Vector {
+    // Divides this vetor by another
+    Divide(value: Vector): Vector {
         if (value.x != 0 && value.y != 0)
             return new Vector(this.x / value.x, this.y / value.y);
         else
             return Vector.zero;
     }
 
-    divideNum(value: number): Vector {
+    // Divides this vector by a number
+    DivideNum(value: number): Vector {
         if (value != 0)
             return new Vector(this.x / value, this.y / value);
         else
             return Vector.zero;
     }
 
-    static lerp(start: Vector, end: Vector, percent: number): Vector {
-        return new Vector(
-            Calc.lerp(start.x, end.x, percent),
-            Calc.lerp(start.y, end.y, percent)
-        );
+    // Floors both axis of this vector
+    Floor(): Vector {
+        return new Vector(Math.floor(this.x), Math.floor(this.y));
     }
 
-    // Converts an angle in radians to a vector
-    static radToVector(value: number): Vector {
-        return new Vector(Math.cos(value), Math.sin(value));
+    // Locks this vector within a specifed range
+    Clamp(minX: number, minY: number, maxX: number, maxY: number): Vector {
+        return new Vector(Calc.Clamp(this.x, minX, maxX), Calc.Clamp(this.y, minY, maxY));
     }
 
-    static toVector(object: any): Vector {
-        return new Vector(object.x, object.y);
+    // Gets the magnitude of this vector
+    Magnitude(): number {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
-    // Converts a vector to an angle in radians
-    toRad(): number {
+    // Normalizes this vector
+    Normalized(): Vector {
+        const magnitude: number = this.Magnitude();
+        if (magnitude != 0)
+            return this.DivideNum(magnitude);
+        else return Vector.zero;
+    }
+
+    // Gets the distance from this vetor to another as a vector
+    DistanceTo(target: Vector): Vector {
+        return target.Subtract(this);
+    }
+
+    // Gets the distance from this vetor to another as a number
+    Distance(target: Vector): number {
+        return this.DistanceTo(target).Magnitude();
+    }
+
+    // Gets the directon from this vector to another
+    DirectionTo(target: Vector): Vector {
+        return this.DistanceTo(target).Normalized();
+    }
+
+    // Interpolates to another vector
+    LerpTo(target: Vector, percent: number): Vector {
+        return Vector.Lerp(this, target, percent);
+    }
+
+    // Converts this vector to an angle in radians
+    ToRad(): number {
         return Math.atan2(this.x, this.y);
     }
 
+    // Converts this vetor to world space
     // doesnt account for scale
-    toLocal(object: any): Vector {
-        return this.add(Vector.toVector(object.pivot));
+    ToLocal(object: any): Vector {
+        return this.Add(Vector.ToVector(object.pivot));
     }
 
-    rotate(radians: number): Vector {
+    // Rotates this vector by radians
+    Rotate(radians: number): Vector {
         return new Vector(
             this.x * Math.cos(radians) - this.y * Math.sin(radians),
             this.x * Math.sin(radians) + this.y * Math.cos(radians)
         );
     }
 
+    // Interpolates between two vectors
+    static Lerp(start: Vector, end: Vector, percent: number): Vector {
+        return new Vector(
+            Calc.Lerp(start.x, end.x, percent),
+            Calc.Lerp(start.y, end.y, percent)
+        );
+    }
+
+    // Converts an angle in radians to a vector
+    static RadToVector(value: number): Vector {
+        return new Vector(Math.cos(value), Math.sin(value));
+    }
+
+    // Creates a vetor from an object
+    static ToVector(object: any): Vector {
+        return new Vector(object.x, object.y);
+    }
+
 }
 
 export class Calc {
-    static clamp(num: number, min: number, max: number): number {
-        return num <= min ? min : num >= max ? max : num;
+
+    // Locks a value within a specified range
+    static Clamp(value: number, min: number, max: number): number {
+        return value <= min ? min : value >= max ? max : value;
     }
 
-    static lerp(start: number, end: number, percent: number): number {
+    // Interpolates between two numbers
+    static Lerp(start: number, end: number, percent: number): number {
         return (1 - percent) * start + percent * end
     }
 
-    static loop(num: number, min: number, max: number): number {
-        return num < min ? max : num > max ? min : num;
+    // Loops over a specified range
+    static Loop(value: number, min: number, max: number): number {
+        return this.Mod(value, max - min) + min;
+    }
+
+    // Modulo Operator
+    static Mod(value: number, mod: number): number {
+        return ((value % mod) + mod) % mod;
     }
 }

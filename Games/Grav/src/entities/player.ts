@@ -34,7 +34,7 @@ export default class Camera extends Entity {
 
     }
 
-    Update(delta: number): void {
+    Update(delta: number, time: number): void {
         const step = this.speed * this.zoom * delta;
         if (right.isDown && left.isUp) {
             this.position.x += step;
@@ -55,7 +55,8 @@ export default class Camera extends Entity {
 
         app.stage.scale.set(1 / this.zoom);
 
-        console.log(mouse.screenPosition.toLocal(app.stage))
+        // console.log(mouse.screenPosition.toLocal(app.stage))
         // console.log()
+        
     }
 }
