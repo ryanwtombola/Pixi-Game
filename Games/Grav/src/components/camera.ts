@@ -6,10 +6,9 @@ import { left, right, up, down, mouse } from '../input';
 
 export default class Camera extends Component {
 
-    public speed: number = 20;
-
-    public zoom: number = 1;
-    public zoomSpeed: number = 0.001;
+    private speed: number = 20;
+    private zoom: number = 1;
+    private zoomSpeed: number = 0.001;
 
     private graphics: PIXI.Graphics = new Graphics();
 

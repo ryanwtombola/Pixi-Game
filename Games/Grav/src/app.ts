@@ -37,11 +37,11 @@ app.renderer.autoResize = true;
 Loader.load(Setup);
 
 function Setup(): void {
-    const camera = new Entity("Camera");
-    camera.components.push(new Camera(camera));
+    const player = new Entity("Player");
+    player.components.push(new Camera(player));
 
     const entities: Entity[] = [
-        camera
+        player
     ];
 
     // Call the start method on all entites when loaded
