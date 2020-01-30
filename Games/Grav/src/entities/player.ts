@@ -1,5 +1,5 @@
 import Entity from '../entity';
-import { app } from '../app';
+import { stage, resolution } from '../app';
 import { Graphics } from '../aliases';
 import { Calc, Vector } from '../utilites';
 import { left, right, up, down, mouse } from '../input';
@@ -28,9 +28,9 @@ export default class Camera extends Entity {
             .lineTo(500, 0)
             .endFill()
 
-        this.graphics.x = 100;
-        this.graphics.y = 10;
-        app.stage.addChild(this.graphics);
+        this.graphics.x = 0;
+        this.graphics.y = 0;
+        stage.addChild(this.graphics);
 
     }
 
@@ -50,13 +50,11 @@ export default class Camera extends Entity {
 
         this.zoom *= 1 + mouse.wheel * this.zoomSpeed * delta;
 
-        app.stage.pivot.x = this.position.x - (innerWidth / 2) * this.zoom;
-        app.stage.pivot.y = this.position.y - (innerHeight / 2) * this.zoom;
+        stage.pivot = this.position.ToPixi();
+        stage.position = resolution.DivideNum(2).ToPixi();
 
-        app.stage.scale.set(1 / this.zoom);
+        stage.scale.set(1 / this.zoom);
 
-        // console.log(mouse.screenPosition.toLocal(app.stage))
-        // console.log()
-        
+        // console.log(Vector.To(stage.toLocal(mouse.screenPosition)).Floor())
     }
 }

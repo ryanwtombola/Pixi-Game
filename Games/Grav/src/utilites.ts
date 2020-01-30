@@ -105,15 +105,14 @@ export class Vector {
         return Vector.Lerp(this, target, percent);
     }
 
+    // Checks if this vector is equal to a target vector
+    CompareTo(target: Vector): boolean {
+        return (target.x === this.x && target.y === this.y);
+    }
+
     // Converts this vector to an angle in radians
     ToRad(): number {
         return Math.atan2(this.x, this.y);
-    }
-
-    // Converts this vetor to world space
-    // doesnt account for scale
-    ToLocal(object: any): Vector {
-        return this.Add(Vector.ToVector(object.pivot));
     }
 
     // Rotates this vector by radians
@@ -124,6 +123,15 @@ export class Vector {
         );
     }
 
+    ToPixi(): PIXI.Point {
+        return new PIXI.Point(this.x, this.y);
+    }
+
+    // Converts an angle in radians to a vector
+    static RadToVector(value: number): Vector {
+        return new Vector(Math.cos(value), Math.sin(value));
+    }
+
     // Interpolates between two vectors
     static Lerp(start: Vector, end: Vector, percent: number): Vector {
         return new Vector(
@@ -132,13 +140,8 @@ export class Vector {
         );
     }
 
-    // Converts an angle in radians to a vector
-    static RadToVector(value: number): Vector {
-        return new Vector(Math.cos(value), Math.sin(value));
-    }
-
     // Creates a vetor from an object
-    static ToVector(object: any): Vector {
+    static To(object: any): Vector {
         return new Vector(object.x, object.y);
     }
 

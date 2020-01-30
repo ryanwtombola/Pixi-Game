@@ -2,6 +2,7 @@ import { Application, Loader } from './aliases';
 import Entity from './entity';
 import Camera from './entities/player';
 import { mouse } from './input';
+import { Vector } from './utilites';
 
 // -----------------------------------------------======== PIXI ========----------------------------------------------- //
 
@@ -9,15 +10,20 @@ import { mouse } from './input';
 // PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 // Create a Pixi Application
-export const app = new Application({
-    width: window.innerWidth,
-    height: window.innerHeight,
+export const app: PIXI.Application = new Application({
+    width: innerWidth,
+    height: innerHeight,
     antialias: true,
     transparent: false,
     resolution: 1,
     forceFXAA: false,
     roundPixels: true
 });
+
+export const stage: PIXI.Container = app.stage;
+export let resolution: Vector = new Vector(innerWidth, innerHeight);
+let lastRes: Vector = Vector.zero;
+
 
 // Add the canvas to the HTML document
 document.body.appendChild(app.view);
@@ -26,7 +32,6 @@ document.body.appendChild(app.view);
 app.renderer.view.style.position = "absolute";
 app.renderer.view.style.display = "block";
 app.renderer.autoResize = true;
-app.renderer.resize(window.innerWidth, window.innerHeight);
 
 // Run the Setup function when finshed loading
 Loader.load(Setup);
@@ -45,6 +50,13 @@ function Setup(): void {
     // Call the update method on all entities each frame and pass the delta time
     app.ticker.add((delta: number) => {
         time += delta;
+
+        resolution = new Vector(innerWidth, innerHeight);
+        if (!lastRes.CompareTo(resolution)) {
+            app.renderer.resize(innerWidth, innerHeight);
+            lastRes = resolution;
+        }
+
         entities.forEach((entity: Entity) => {
             entity.Update(delta, time);
         });
