@@ -87,7 +87,7 @@ export class Vector {
             return Vector.zero;
     }
 
-    divideNmu(value: number): Vector {
+    divideNum(value: number): Vector {
         if (value != 0)
             return new Vector(this.x / value, this.y / value);
         else
@@ -115,8 +115,9 @@ export class Vector {
         return Math.atan2(this.x, this.y);
     }
 
-    toLocal(appStagePivot: any): Vector {
-        return this.add(new Vector(appStagePivot.x, appStagePivot.y));
+    // doesnt account for scale
+    toLocal(object: any): Vector {
+        return this.add(Vector.toVector(object.pivot));
     }
 
     rotate(radians: number): Vector {

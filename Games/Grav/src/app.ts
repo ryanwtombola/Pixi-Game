@@ -1,6 +1,7 @@
 import { Application, Loader } from './aliases';
 import Entity from './entity';
-import Player from './entities/player';
+import Camera from './entities/player';
+import { mouse } from './input';
 
 // -----------------------------------------------======== PIXI ========----------------------------------------------- //
 
@@ -32,7 +33,7 @@ Loader.load(Setup);
 
 function Setup(): void {
     const entities: Entity[] = [
-        new Player()
+        new Camera()
     ];
 
     // Call the start method on all entites when loaded
@@ -47,5 +48,6 @@ function Setup(): void {
         entities.forEach((entity: Entity) => {
             entity.Update(delta, time);
         });
+        mouse.wheel = 0;
     });
 }
