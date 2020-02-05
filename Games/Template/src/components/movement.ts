@@ -28,7 +28,7 @@ export default class Movement extends Component {
             .endFill()
 
         this.graphics.position = Vector.zero;
-        this.entity.addChild(this.graphics);
+        stage.addChild(this.graphics);
     }
 
     Update(delta: number) {

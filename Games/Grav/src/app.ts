@@ -2,6 +2,7 @@ import { Application, Loader } from './aliases';
 import { Entity, Component } from './entity';
 import Camera from './components/camera';
 import Movement from './components/movement';
+import Train from './components/train';
 import { mouse } from './input';
 import { Vector } from './utilites';
 
@@ -38,12 +39,16 @@ app.renderer.autoResize = true;
 Loader.load(Setup);
 
 function Setup(): void {
+
     const camera = new Entity("Camera");
     camera.components.push(new Camera(camera));
     camera.components.push(new Movement(camera));
 
+    const train = new Entity("Train");
+    train.components.push(new Train(train));
+
     const entities: Entity[] = [
-        camera
+        camera, train
     ];
 
     // Call the start method on all entites when loaded
