@@ -36,6 +36,6 @@
     "@types/pixi.js": "^4.5.5"
   },
   "dependencies": {
-    "pixi.js": "^4.5.5"
+    "pixi.js": "^4.8.9"
   }
 }
