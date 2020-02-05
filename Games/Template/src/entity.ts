@@ -1,3 +1,5 @@
+import { stage } from "./app";
+
 export class Entity extends PIXI.Container {
 
     public name: string;
@@ -6,6 +8,7 @@ export class Entity extends PIXI.Container {
     constructor(name: string) {
         super();
         this.name = name;
+        stage.addChild(this);
     }
 
     Start(): void {

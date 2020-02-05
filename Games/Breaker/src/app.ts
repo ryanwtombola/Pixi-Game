@@ -1,7 +1,7 @@
 import { Application, Loader } from './aliases';
 import { Entity, Component } from './entity';
 import Camera from './components/camera';
-import Movement from './components/movement';
+import Movement from './components/paddle';
 import { mouse } from './input';
 import { Vector } from './utilites';
 
