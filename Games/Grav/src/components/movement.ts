@@ -29,10 +29,13 @@ export default class Movement extends Component {
 
         this.graphics.position = Vector.zero;
         stage.addChild(this.graphics);
+
+        this.entity.position = new Vector(200, 200);
     }
 
     Update(delta: number) {
 
+        /*
         const step = this.speed * this.camera.zoom * delta;
         if (right.isDown && left.isUp) {
             this.entity.position.x += step;
@@ -44,7 +47,7 @@ export default class Movement extends Component {
             this.entity.position.y += step;
         } else if (up.isDown && down.isUp) {
             this.entity.position.y -= step;
-        }
+        }*/
     }
 
 }

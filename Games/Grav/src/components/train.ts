@@ -1,6 +1,7 @@
 import { Component } from '../entity';
 import { stage, resolution } from '../app';
 import { Vector, Calc } from '../utilites';
+import { up, down } from '../input';
 import { Graphics } from '../aliases';
 
 export default class Train extends Component {
@@ -10,7 +11,7 @@ export default class Train extends Component {
     private track1: Track = new Straight(Vector.zero, new Vector(500, 0));
     private track2: Track = new Straight(new Vector(500, 0), new Vector(500, 500));
     private track3: Track = new Straight(new Vector(500, 500), new Vector(0, 500));
-    private track4: Track = new Straight(new Vector(0, 500), new Vector(0, 0));
+    private track4: Track = new Curve(new Vector(0, 500), new Vector(0, 0), new Vector(-200, 500), new Vector(-200, 0));
 
     public trackCur: Track = this.track1;
     public trackPos: number = 0;
@@ -31,16 +32,25 @@ export default class Train extends Component {
 
     Update(delta: number, time: number) {
 
+        const step = 0.001 * delta;
+        if (up.isDown && down.isUp) {
+            this.trackVel += step;
+        } else if (down.isDown && up.isUp) {
+            this.trackVel -= step;
+        }
+
+        if (this.trackVel != 0) {
+            this.Move(delta);
+        }
+    }
+
+    Move(delta: number) {
+
         const pos: number = this.trackPos + this.trackVel * delta;
         this.trackPos = this.trackCur.CheckPos(pos, this);
-
         this.entity.position = this.trackCur.GetPosition(this.trackPos);
 
         this.trackVel *= 0.98;
-    }
-
-    Move() {
-
     }
 }
 
@@ -111,7 +121,8 @@ class Curve extends Track {
         this.endControl = endControl;
     }
 
-    GetPosition(): Vector {
-        return Vector.zero;
+    GetPosition(amount: number): Vector {
+        //return Vector.CubicLerp(this.start, this.startControl, this.endControl, this.end, amount);
+        return Vector.QuadraticLerp(this.start, this.startControl, this.end, amount);
     }
 }

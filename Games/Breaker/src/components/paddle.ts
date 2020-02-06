@@ -19,12 +19,9 @@ export default class Movement extends Component {
             .lineStyle(10, 0x666666, 1, 0)
             .moveTo(0, 0)
             .lineTo(500, 0)
-            .lineTo(0, 500)
-            .lineTo(0, 0)
-            .moveTo(500, 0)
             .lineTo(500, 500)
             .lineTo(0, 500)
-            .lineTo(500, 0)
+            .lineTo(0, 0)
             .endFill()
 
         this.graphics.position = Vector.zero;

@@ -126,10 +126,24 @@ export class Vector extends PIXI.Point {
     }
 
     // Interpolates between two vectors
-    static Lerp(start: Vector, end: Vector, percent: number): Vector {
+    static Lerp(a: Vector, b: Vector, val: number): Vector {
         return new Vector(
-            Calc.Lerp(start.x, end.x, percent),
-            Calc.Lerp(start.y, end.y, percent)
+            Calc.Lerp(a.x, b.x, val),
+            Calc.Lerp(a.y, b.y, val)
+        );
+    }
+
+    static QuadraticLerp(a: Vector, b: Vector, c: Vector, val: number): Vector {
+        return new Vector(
+            Calc.QuadraticLerp(a.x, b.x, c.x, val),
+            Calc.QuadraticLerp(a.y, b.y, c.y, val)
+        );
+    }
+
+    static CubicLerp(a: Vector, b: Vector, c: Vector, d: Vector, val: number): Vector {
+        return new Vector(
+            Calc.CubicLerp(a.x, b.x, c.x, d.x, val),
+            Calc.CubicLerp(a.y, b.y, c.y, d.y, val)
         );
     }
 
@@ -148,8 +162,16 @@ export class Calc {
     }
 
     // Interpolates between two numbers
-    static Lerp(start: number, end: number, percent: number): number {
-        return (1 - percent) * start + percent * end
+    static Lerp(a: number, b: number, val: number): number {
+        return (1 - val) * a + val * b
+    }
+
+    static QuadraticLerp(a: number, b: number, c: number, val: number) {
+        return Math.pow(1 - val, 2) * a + 2 * (1 - val) * val * b + Math.pow(val, 2) * c;
+    }
+
+    static CubicLerp(a: number, b: number, c: number, d: number, val: number): number {
+        return Math.pow(1 - val, 3) * a + 3 * Math.pow(1 - val, 2) * val * b + 3 * (1 - val) * Math.pow(val, 2) * c + Math.pow(val, 3) * d;
     }
 
     // Loops over a specified range
