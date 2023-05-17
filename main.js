@@ -35,9 +35,9 @@ app.renderer.resize(window.innerWidth, window.innerHeight);
 
 // Load an image and run the setup function when it's done
 PIXI.loader
-    .add("Assets/space-spritesheet.json")
-    .add("Assets/Launchpad Mockup.png")
-    .add("Assets/VAB.png")
+    .add("assets/space-spritesheet.json")
+    .add("assets/Launchpad Mockup.png")
+    .add("assets/VAB.png")
     .load(setup);
 
 let left = keyboard("a"),
@@ -70,7 +70,7 @@ window.addEventListener("click", click => {
 
 let json;
 let request = new XMLHttpRequest();
-request.open("GET", "Assets/space-spritesheet.json", true);
+request.open("GET", "assets/space-spritesheet.json", true);
 request.onload = function() {
     json = JSON.parse(this.response);
 };
@@ -118,7 +118,7 @@ let rocket, camera = Vector.zero;
 // This will run when the image has loaded
 function setup() {
     // Create an alias called id for all the textures
-    id = resources["Assets/space-spritesheet.json"].textures;
+    id = resources["assets/space-spritesheet.json"].textures;
 
     let style = new TextStyle({
         fontFamily: "Arial",
@@ -147,7 +147,7 @@ function setup() {
     vab = new Container();
     app.stage.addChild(vab);
 
-    let vabBackground = new Sprite(resources["Assets/VAB.png"].texture);
+    let vabBackground = new Sprite(resources["assets/VAB.png"].texture);
     vabBackground.scale.set(8)
     vab.addChild(vabBackground);
 
@@ -192,7 +192,7 @@ function setup() {
     planet.radius = planet.width / 2;
 
     // Launchpad
-    let launchpad = new Sprite(resources["Assets/Launchpad Mockup.png"].texture);
+    let launchpad = new Sprite(resources["assets/Launchpad Mockup.png"].texture);
     launchpad.anchor.set(0.375, 1);
     launchpad.y = -637100;
     launchpad.scale.set(0.25);
@@ -430,7 +430,7 @@ function World(delta) {
             //animate(rocket, "Idle", true);
         }
         if (down.isDown) {
-            rocket.angularVelocity *= (1 - brakingForce) / delta;
+            // rocket.angularVelocity *= (1 - brakingForce) / delta;
         }
 
         if (launched) {

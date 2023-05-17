@@ -1,5 +1,16 @@
 # Kerbz
 ## Building
+### With Nix
+```bash
+git clone https://github.com/ryanwtombola/Pixi-Game
+cd Pixi-Game
+nix develop
+npm i
+npm run serve
+```
+
+### Without Nix
+You need to have node installed.
 ```bash
 git clone https://github.com/ryanwtombola/Pixi-Game
 cd Pixi-Game
