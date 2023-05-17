@@ -1,10 +1,7 @@
-import * as PIXI from 'pixi.js';
-import { Vector } from './utilites';
-
 // -----------------------------------------------======== PIXI ========----------------------------------------------- //
 
 // Preserves pixels when upscaling
-//PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
+PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 // Aliases
 let Application = PIXI.Application,
@@ -12,12 +9,12 @@ let Application = PIXI.Application,
     resources = PIXI.loader.resources,
     Sprite = PIXI.Sprite,
     Text = PIXI.Text,
-    TextStyle = PIXI.TextStyle,
-    Graphics = PIXI.Graphics,
-    Container = PIXI.Container;
+    TextStyle = PIXI.TextStyle;
+Graphics = PIXI.Graphics;
+Container = PIXI.Container;
 
 // Create a Pixi Application
-let app = new Application({
+let app = new PIXI.Application({
     width: window.innerWidth,
     height: window.innerHeight,
     antialias: true,
@@ -37,19 +34,19 @@ app.renderer.autoResize = true;
 app.renderer.resize(window.innerWidth, window.innerHeight);
 
 // Load an image and run the setup function when it's done
-loader
-    .add("./Assets/space-spritesheet.json")
-    .add("./Assets/Launchpad Mockup.png")
-    .add("./Assets/VAB.png")
+PIXI.loader
+    .add("Assets/space-spritesheet.json")
+    .add("Assets/Launchpad Mockup.png")
+    .add("Assets/VAB.png")
     .load(setup);
 
 let left = keyboard("a"),
     right = keyboard("d"),
     up = keyboard("w"),
-    down = keyboard("s"),
-    keyM = keyboard("m"),
-    comma = keyboard("q"),
-    period = keyboard("e")
+    down = keyboard("s");
+keyM = keyboard("m");
+comma = keyboard("q");
+period = keyboard("e");
 
 window.addEventListener("mousemove", e => { worldMousePos = new Vector(e.clientX, e.clientY); }, false);
 window.addEventListener("wheel", event => {
@@ -73,7 +70,7 @@ window.addEventListener("click", click => {
 
 let json;
 let request = new XMLHttpRequest();
-request.open("GET", "./Assets/space-spritesheet.json", true);
+request.open("GET", "Assets/space-spritesheet.json", true);
 request.onload = function() {
     json = JSON.parse(this.response);
 };
@@ -121,7 +118,7 @@ let rocket, camera = Vector.zero;
 // This will run when the image has loaded
 function setup() {
     // Create an alias called id for all the textures
-    id = resources["./Assets/space-spritesheet.json"].textures;
+    id = resources["Assets/space-spritesheet.json"].textures;
 
     let style = new TextStyle({
         fontFamily: "Arial",
@@ -150,7 +147,7 @@ function setup() {
     vab = new Container();
     app.stage.addChild(vab);
 
-    let vabBackground = new Sprite(resources["./Assets/VAB.png"].texture);
+    let vabBackground = new Sprite(resources["Assets/VAB.png"].texture);
     vabBackground.scale.set(8)
     vab.addChild(vabBackground);
 
@@ -195,7 +192,7 @@ function setup() {
     planet.radius = planet.width / 2;
 
     // Launchpad
-    let launchpad = new Sprite(resources["./Assets/Launchpad Mockup.png"].texture);
+    let launchpad = new Sprite(resources["Assets/Launchpad Mockup.png"].texture);
     launchpad.anchor.set(0.375, 1);
     launchpad.y = -637100;
     launchpad.scale.set(0.25);

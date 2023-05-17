@@ -1,16 +1,16 @@
 function trajectory(position, velocity, maxIterations, scale) {
     var points = [],
         vel = [],
-        length = 0,
-        fullOrbit = gravity(position).toRad() + Math.PI,
+        length = 0;
+    fullOrbit = gravity(position).toRad() + Math.PI,
         currentAngle = 0,
         looped = false,
         playerDistance = position.distance(planet),
         lastDistance = Vector.zero,
         apoapsis = Vector.zero,
-        apoapsisDistance = 0,
-        periapsis = Vector.zero,
-        periapsisDistance = 0
+        apoapsisDistance = 0;
+    periapsis = Vector.zero;
+    periapsisDistance = 0;
 
     scale /= Math.pow(maxIterations, 1.5);
 
