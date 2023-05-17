@@ -224,9 +224,9 @@ function setup() {
     GUI = new Container();
     world.addChild(GUI);
 
-    instructionText2 = new Text("Press W to launch. \nUse A & D to rotate. \nPress M for map and\nuse scroll to zoom.", style);
+    instructionText2 = new Text("Press W to launch.\nUse A & D to rotate.\nUse Q & E to time warp.\nPress M for map and\nuse scroll to zoom.", style);
     GUI.addChild(instructionText2);
-    instructionText2.position = new Vector(window.innerWidth - 350, 0);
+    instructionText2.position = new Vector(window.innerWidth - 400, 0);
 
     // Velocity
     velocityText = new Text("Velocity: ", style);
