@@ -1,10 +1,573 @@
 import * as PIXI from "pixi.js"
 
+class Vector {
+    static zero = new Vector(0, 0);
+    static one = new Vector(1, 1);
+    static half = new Vector(0.5, 0.5);
+
+    static up = new Vector(0, 1);
+    static right = new Vector(1, 0);
+    static down = new Vector(0, -1);
+    static left = new Vector(-1, 0);
+
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    // Returns the magnitude of the vector
+    magnitude() {
+            return Math.sqrt(this.x * this.x + this.y * this.y);
+        }
+        // Returns the normalized vector (direction)
+    normalized() {
+        var magnitude = this.magnitude();
+        if (magnitude != 0)
+            return new Vector(this.x / magnitude, this.y / magnitude);
+        else return 0;
+    }
+    floor() {
+        return new Vector(Math.floor(this.x), Math.floor(this.y));
+    }
+    clamp(minX, minY, maxX, maxY) {
+        return new Vector(clamp(this.x, minX, maxX), clamp(this.y, minY, maxY));
+    }
+    lerp(start, end, percent) {
+        return new Vector(
+            lerp(start.x, end.x, percent),
+            lerp(start.y, end.y, percent)
+        );
+    }
+
+    // Caluclates the distance from one vector to another and returns a vector
+    distanceTo(target) {
+            if (typeof target === "object") {
+                target = new Vector(target.x, target.y);
+            }
+            return new Vector(target.x - this.x, target.y - this.y);
+        }
+        // Calculates the direction to another vector and returns a normalized vector
+    directionTo(target) {
+            if (typeof target === "object") {
+                target = new Vector(target.x, target.y);
+            }
+            return this.distanceTo(target).normalized();
+        }
+        // Returns the distace to the target as a float (non directional)
+    distance(target) {
+        if (typeof target === "object") {
+            target = new Vector(target.x, target.y);
+        }
+        return this.distanceTo(target).magnitude();
+    }
+
+    // Takes two vectors and returns their sum
+    add(value) {
+            if (typeof value === "number") {
+                value = new Vector(value, value);
+            }
+            return new Vector(this.x + value.x, this.y + value.y);
+        }
+        // Takes two vectors and subtracts one from the other
+    subtract(value) {
+            if (typeof value === "number") {
+                value = new Vector(value, value);
+            }
+            return new Vector(this.x - value.x, this.y - value.y);
+        }
+        // Takes two vectors and returns their product
+    multiply(value) {
+            if (typeof value === "number") {
+                value = new Vector(value, value);
+            }
+            return new Vector(this.x * value.x, this.y * value.y);
+        }
+        // Divides a vetor by by another and returns a vector
+    divide(value) {
+        if (typeof value === "number") {
+            value = new Vector(value, value);
+        }
+        if (value.x != 0 && value.y != 0)
+            return new Vector(this.x / value.x, this.y / value.y);
+        else return value.zero;
+    }
+
+    // Converts an angle in radians to a vector
+    radToVector(value) {
+            return new Vector(Math.cos(value), Math.sin(value));
+        }
+        // Converts a vector to an angle in radians
+    toRad() {
+        return Math.atan2(this.x, this.y);
+    }
+    toVector(object) {
+        return new Vector(object.x, object.y);
+    }
+    toLocal() {
+        return this.add(new Vector(app.stage.pivot.x, app.stage.pivot.y));
+    }
+    rotate(radians) {
+        return new Vector(
+            this.x * Math.cos(radians) - this.y * Math.sin(radians),
+            this.x * Math.sin(radians) + this.y * Math.cos(radians)
+        );
+    }
+}
+
+class Part {
+    sprite;
+    parent;
+    container;
+
+    constructor(spriteName, attachments, mass) {
+        this.sprite;
+        this.parent;
+        this.container;
+        this.spriteName = spriteName;
+        this.attachments = attachments;
+        this.mass = mass;
+        this.position = Vector.zero;
+    }
+
+    addPart(x, y, parent) {
+        this.position = new Vector(x, y);
+
+        this.parent = parent;
+        this.container = parent.container;
+        this.sprite = new Sprite(id[this.spriteName]);
+        this.sprite.position.set(x, y);
+        this.sprite.scale.set(1 / 16);
+        this.container.addChild(this.sprite);
+    }
+
+    removePart() {
+        this.container.removeChild(this.sprite);
+    }
+
+    destroy() {
+        let explosion = new Sprite(id[this.spriteName]);
+        let worldPos = this.parent.worldPos(this.position.subtract(this.parent.COM.add(Vector.half)));
+        explosion.scale.set(0.25);
+        let explosionPos = worldPos.subtract(new Vector(explosion.width / 2, explosion.height - 2));
+        explosion.position.set(explosionPos.x, explosionPos.y);
+        explosion.rotation = gravity(worldPos).toRad();
+        world.addChild(explosion);
+        this.removePart();
+        return explosion;
+    }
+}
+
+class FuelTank extends Part {
+    constructor(spriteName, attachments, dryMass, wetMass, fuel) {
+        super(spriteName, attachments, wetMass);
+        this.dryMass = dryMass;
+        this.wetMass = wetMass;
+        this.fuel = fuel;
+        this.fuelMax = fuel;
+    }
+
+    drain(amount) {
+        this.fuel = clamp(this.fuel - amount, 0, this.fuelMax);
+        this.mass = lerp(this.dryMass, this.wetMass, this.fuel / this.fuelMax);
+    }
+}
+
+class Engine extends Part {
+    constructor(spriteName, attachments, mass, thrust, plumeSpriteName) {
+        super(spriteName, attachments, mass);
+        this.thrust = thrust;
+        this.plumeSpriteName = plumeSpriteName;
+        this.plume;
+    }
+
+    addPart(x, y, parent) {
+        super.addPart(x, y, parent);
+        this.plume = new Sprite(id[this.plumeSpriteName]);
+        this.plume.position.set(0, 16)
+        this.sprite.addChild(this.plume);
+        this.plume.visible = false;
+    }
+
+
+}
+
+class Cabin extends Part {
+    constructor(spriteName, attachments, mass) {
+        super(spriteName, attachments, mass);
+    }
+}
+
+class Rocket {
+    constructor(x, y, width, height) {
+        this.container = new Container();
+        this.width = width;
+        this.height = height;
+        this.parts = [
+            [],
+            []
+        ];
+        this.parts = [...Array(width)].map(e => Array(height).fill(undefined));
+        this.fuelTanks = [];
+        this.engines = [];
+        this.destroyedParts = [];
+
+        this.mass;
+        this.COM;
+        this.fuel;
+        this.fuelMax;
+        this.thrust;
+
+        this.position = new Vector(x, y);
+        this.rotation = 0;
+        this.velocity = Vector.zero;
+        this.angularVelocity = 0;
+        this.scale = 16 * 8;
+
+        this.calculateProperties();
+        this.move();
+    }
+
+    move(delta) {
+        if (delta === undefined)
+            delta = 1;
+        this.position = this.position.add(this.velocity.multiply(delta));
+        this.rotation += this.angularVelocity * 1;
+        this.container.position.set(this.position.x, this.position.y);
+        this.container.rotation = this.rotation;
+        this.container.scale.set(this.scale);
+    }
+
+    thrusts(delta) {
+        if (delta === undefined)
+            delta = 1;
+
+        if (this.fuelTanks.length !== 0) {
+            this.engines.forEach(e => {
+                this.velocity = this.velocity.add(Vector.down.rotate(this.rotation).multiply(e.thrust * delta).divide(this.mass * 60));
+                e.plume.visible = true;
+            });
+            //console.log(this.fuelTanks.map(f => f.fuel.toFixed(2)));
+            this.fuel = 0;
+            this.fuelTanks.forEach(t => {
+                if (t !== undefined) {
+                    t.drain(rocket.thrust / this.fuelTanks.length * delta);
+                    this.fuel += t.fuel;
+                }
+            });
+            this.changeCOM();
+        }
+    }
+
+    placePart(part, x, y) {
+        if (x < 0 || y < 0 || x >= this.parts.length || y >= this.parts[x].length) {
+            return;
+        }
+        if (this.parts[x][y] === undefined) {
+            this.parts[x][y] = Object.assign(new part.constructor(), part);
+            this.parts[x][y].addPart(x, y, this);
+        } else {
+            this.parts[x][y].removePart();
+            this.parts[x][y] = undefined;
+        }
+        this.calculateProperties();
+    }
+
+    calculateProperties() {
+        this.mass = 0;
+        this.fuel = 0;
+        this.fuelMax = 0;
+        this.thrust = 0;
+        this.height = 0;
+        this.fuelTanks = [];
+        this.engines = [];
+
+        let mx = 0,
+            my = 0;
+        for (let x = 0; x < this.parts.length; x++) {
+            for (let y = 0; y < this.parts[0].length; y++) {
+                const part = this.parts[x][y];
+                if (part !== undefined) {
+                    this.mass += part.mass;
+
+                    if (part.constructor.name === "FuelTank") {
+                        this.fuelTanks.push(part);
+                        this.fuel += part.fuel;
+                        this.fuelMax += part.fuelMax;
+                    } else if (part.constructor.name === "Engine") {
+                        this.engines.push(part);
+                        this.thrust += part.thrust;
+                    }
+
+                    mx += part.mass * x;
+                    my += part.mass * y;
+                    if (y + 1 > this.height)
+                        this.height = y + 1;
+                }
+            }
+        }
+        if (this.mass != 0)
+            this.COM = new Vector(mx / this.mass, my / this.mass);
+
+        // console.clear();
+        // console.log(`Mass: ${this.mass} Fuel: ${this.fuel} Thrust: ${this.thrust}`);
+        // console.log(`Thrust to Weight: ${this.thrust / this.mass}`);
+    }
+
+    worldPos(value) {
+        return this.position.add(Vector.zero.toVector(value).add(Vector.half).rotate(this.rotation).multiply(this.scale))
+    }
+
+    localPos(value) {
+        let pos = value
+            .subtract(this.position)
+            .rotate(-this.rotation)
+            .divide(this.scale);
+        //console.log(pos.floor());
+        return pos;
+    }
+
+    checkCollisions() {
+        let partCount = 0;
+        for (let x = 0; x < this.parts.length; x++) {
+            for (let y = 0; y < this.parts[0].length; y++) {
+                if (this.parts[x][y] !== undefined) {
+                    partCount++;
+                    if (this.worldPos(this.parts[x][y].sprite).distance(planet) <= planet.radius + 2 && alive) {
+                        this.destroyedParts.push(this.parts[x][y].destroy());
+                        this.parts[x][y] = undefined;
+                        this.changeCOM();
+                    }
+                }
+            }
+        }
+        if (partCount <= 0) {
+            alive = false;
+        }
+    }
+
+    changeCOM() {
+        let prevCOM = this.COM;
+        this.calculateProperties();
+        let COMDiff = prevCOM.subtract(this.COM);
+        this.position = this.position.subtract(COMDiff.multiply(4).rotate(this.rotation));
+        for (let x = 0; x < this.parts.length; x++) {
+            for (let y = 0; y < this.parts[0].length; y++) {
+                if (this.parts[x][y] !== undefined) {
+                    this.parts[x][y].sprite.x += COMDiff.x;
+                    this.parts[x][y].sprite.y += COMDiff.y;
+                }
+            }
+        }
+    }
+}
+function trajectory(position, velocity, maxIterations, scale) {
+    var points = [],
+        vel = [],
+        length = 0;
+    fullOrbit = gravity(position).toRad() + Math.PI,
+        currentAngle = 0,
+        looped = false,
+        playerDistance = position.distance(planet),
+        lastDistance = Vector.zero,
+        apoapsis = Vector.zero,
+        apoapsisDistance = 0;
+    periapsis = Vector.zero;
+    periapsisDistance = 0;
+
+    scale /= Math.pow(maxIterations, 1.5);
+
+    points[0] = position;
+    vel[0] = velocity;
+
+    for (let i = 1; i < maxIterations; i++) {
+        let gravForce = gravity(points[i - 1]);
+        lastDistance = points[i - 1].distance(planet);
+        length = scale * Math.pow(lastDistance, 1.5);
+
+        if (gravForce != Vector.zero) {
+            collisionCourse = false;
+            if (currentAngle > fullOrbit) {
+                looped = true;
+            }
+
+            if (looped && currentAngle < fullOrbit + 0.1) {
+                points[i] = position;
+                break;
+            } else {
+                currentAngle = gravForce.toRad() + Math.PI;
+                vel[i] = vel[i - 1].add(gravForce.multiply(length));
+                points[i] = points[i - 1].add(vel[i].multiply(length));
+            }
+
+            var distance = points[i].distance(planet);
+            if (distance > apoapsisDistance) {
+                if (playerDistance > distance) {
+                    apoapsis = position;
+                } else {
+                    apoapsis = points[i];
+                    apoapsisDistance = distance;
+                }
+            }
+            if (distance < periapsisDistance || periapsisDistance === 0) {
+                periapsis = points[i];
+                periapsisDistance = distance;
+            }
+        } else {
+            collisionCourse = true;
+            break;
+        }
+    }
+
+    apoapsisIcon.position.set(apoapsis.x, apoapsis.y);
+    periapsisIcon.position.set(periapsis.x, periapsis.y);
+
+    return points;
+}
+
+function lerp(start, end, percent) {
+    return (1 - percent) * start + percent * end;
+}
+
+function keyboard(value) {
+    let key = {};
+    key.value = value;
+    key.isDown = false;
+    key.isUp = true;
+    key.press = undefined;
+    key.release = undefined;
+
+    // Key down handler
+    key.downHandler = event => {
+        if (event.key === key.value) {
+            if (key.isUp && key.press) key.press();
+            key.isDown = true;
+            key.isUp = false;
+            event.preventDefault();
+        }
+    };
+
+    // Key up handler
+    key.upHandler = event => {
+        if (event.key === key.value) {
+            if (key.isDown && key.release) key.release();
+            key.isDown = false;
+            key.isUp = true;
+            event.preventDefault();
+        }
+    };
+
+    // Attach event listeners
+    const downListner = key.downHandler.bind(key);
+    const upListner = key.upHandler.bind(key);
+
+    window.addEventListener("keydown", downListner, false);
+    window.addEventListener("keyup", upListner, false);
+
+    // Detach event listners
+    key.unsubscribe = () => {
+        window.removeEventListener("keydown", downListner);
+        window.removeEventListener("keyup", upListner);
+    };
+
+    return key;
+}
+
+function gravity(position) {
+    let relativePosition = position.distanceTo(planet);
+    let distance = relativePosition.magnitude();
+    if (distance > planet.radius) {
+        let direction = relativePosition.normalized();
+        let gravForce = (planet.radius * 100 * 10) / (distance * distance);
+        return direction.multiply(gravForce);
+    } else {
+        return Vector.zero;
+    }
+}
+
+function clamp(num, min, max) {
+    return num <= min ? min : num >= max ? max : num;
+}
+
+function loop(num, min, max) {
+    return num < min ? max : num > max ? min : num;
+}
+
+function changeTimeWarpText(text) {
+    timeWarpText.alpha = 4;
+    timeWarpText.text = text;
+}
+
+function animate(object, animationName, loop = false, delta = 1) {
+    let animation = json.meta.frameTags.find(x => x.name === animationName);
+
+    if (object.lastAnimation !== animationName) {
+        object.frame = animation.from;
+    }
+
+    if (object.frame < animation.to + 1) {
+        let spriteNumber = object.frame - (object.frame % 1);
+        object.texture = id["Space Tilesheet " + spriteNumber + ".aseprite"];
+        let frameDuration =
+            json.frames["Space Tilesheet " + spriteNumber + ".aseprite"].duration;
+        object.frame += 1 / (((60 / delta) * frameDuration) / 1000);
+    } else if (loop) {
+        object.frame = animation.from;
+    } else {
+        object.frame = animation.to;
+    }
+    object.lastAnimation = animationName;
+}
+
+function createArray(length) {
+    var arr = new Array(length || 0),
+        i = length;
+
+    if (arguments.length > 1) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        while (i--) arr[length - 1 - i] = createArray.apply(this, args);
+    }
+
+    return arr;
+}
+
+class Line extends PIXI.Graphics {
+  constructor(points, lineSize, lineColor) {
+    super();
+
+    var s = (this.lineWidth = lineSize || 5);
+    var c = (this.lineColor = lineColor || "0x000000");
+
+    this.points = points;
+
+    this.lineStyle(s, c);
+
+    this.moveTo(points[0].x, points[0].y);
+    this.lineTo(points[1].x, points[1].y);
+  }
+
+  updatePoints(p) {
+    var points = (this.points = p.map(
+      (val, index) => val || this.points[index]
+    ));
+
+    var s = this.lineWidth;
+    var c = this.lineColor;
+
+    this.clear();
+
+    for (let i = 0; i < points.length - 1; i++) {
+      this.lineStyle(s, c, lerp(0.8, 0, i / (points.length - 1)));
+      this.moveTo(points[i].x, points[i].y);
+      this.lineTo(points[i + 1].x, points[i + 1].y);
+    }
+  }
+}
+
 
 // -----------------------------------------------======== PIXI ========----------------------------------------------- //
 
 // Preserves pixels when upscaling
-PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
 // Aliases
 let Application = PIXI.Application,
@@ -24,7 +587,7 @@ let app = new Application({
     transparent: false,
     resolution: 1,
     forceFXAA: false,
-    roundPixels: true
+    roundPixels: true,
 });
 
 // Add the canvas to the HTML document
