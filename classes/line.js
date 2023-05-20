@@ -1,4 +1,4 @@
-class Line extends PIXI.Graphics {
+export class Line extends PIXI.Graphics {
   constructor(points, lineSize, lineColor) {
     super();
 

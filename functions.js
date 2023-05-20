@@ -1,4 +1,4 @@
-function trajectory(position, velocity, maxIterations, scale) {
+export function trajectory(position, velocity, maxIterations, scale) {
     var points = [],
         vel = [],
         length = 0;
@@ -62,11 +62,11 @@ function trajectory(position, velocity, maxIterations, scale) {
     return points;
 }
 
-function lerp(start, end, percent) {
+export function lerp(start, end, percent) {
     return (1 - percent) * start + percent * end;
 }
 
-function keyboard(value) {
+export function keyboard(value) {
     let key = {};
     key.value = value;
     key.isDown = false;
@@ -110,7 +110,7 @@ function keyboard(value) {
     return key;
 }
 
-function gravity(position) {
+export function gravity(position) {
     let relativePosition = position.distanceTo(planet);
     let distance = relativePosition.magnitude();
     if (distance > planet.radius) {
@@ -122,20 +122,20 @@ function gravity(position) {
     }
 }
 
-function clamp(num, min, max) {
+export function clamp(num, min, max) {
     return num <= min ? min : num >= max ? max : num;
 }
 
-function loop(num, min, max) {
+export function loop(num, min, max) {
     return num < min ? max : num > max ? min : num;
 }
 
-function changeTimeWarpText(text) {
+export function changeTimeWarpText(text) {
     timeWarpText.alpha = 4;
     timeWarpText.text = text;
 }
 
-function animate(object, animationName, loop = false, delta = 1) {
+export function animate(object, animationName, loop = false, delta = 1) {
     let animation = json.meta.frameTags.find(x => x.name === animationName);
 
     if (object.lastAnimation !== animationName) {
@@ -156,7 +156,7 @@ function animate(object, animationName, loop = false, delta = 1) {
     object.lastAnimation = animationName;
 }
 
-function createArray(length) {
+export function createArray(length) {
     var arr = new Array(length || 0),
         i = length;
 

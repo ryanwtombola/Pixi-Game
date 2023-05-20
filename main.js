@@ -1,3 +1,9 @@
+import { keyboard } from "./functions.js"
+import * as PIXI from "pixi.js"
+import { Line } from "./classes/line.js"
+import { Rocket, Cabin, FuelTank, Engine } from "./classes/rocket.js"
+import { Vector } from "./classes/vector.js"
+
 // -----------------------------------------------======== PIXI ========----------------------------------------------- //
 
 // Preserves pixels when upscaling
@@ -5,16 +11,15 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 // Aliases
 let Application = PIXI.Application,
-    loader = PIXI.loader,
     resources = PIXI.loader.resources,
     Sprite = PIXI.Sprite,
     Text = PIXI.Text,
-    TextStyle = PIXI.TextStyle;
-Graphics = PIXI.Graphics;
-Container = PIXI.Container;
+    TextStyle = PIXI.TextStyle,
+    Graphics = PIXI.Graphics,
+    Container = PIXI.Container;
 
 // Create a Pixi Application
-let app = new PIXI.Application({
+let app = new Application({
     width: window.innerWidth,
     height: window.innerHeight,
     antialias: true,
@@ -43,10 +48,10 @@ PIXI.loader
 let left = keyboard("a"),
     right = keyboard("d"),
     up = keyboard("w"),
-    down = keyboard("s");
-keyM = keyboard("m");
-comma = keyboard("q");
-period = keyboard("e");
+    down = keyboard("s"),
+    keyM = keyboard("m"),
+    comma = keyboard("q"),
+    period = keyboard("e");
 
 window.addEventListener("mousemove", e => { worldMousePos = new Vector(e.clientX, e.clientY); }, false);
 window.addEventListener("wheel", event => {
@@ -80,7 +85,9 @@ const drag = 0.02,
     rotationSpeed = 0.001,
     brakingForce = 0.05;
 
-let vab, spaceShip, ghost, mouseGrid;
+var vab, spaceShip, ghost, mouseGrid;
+
+var id;
 
 var line,
     apoapsisIcon,

@@ -1,6 +1,10 @@
-// Attachments is a bool array showing if the object can attach on a certain side [up, right, down, left]
+import { Vector } from "./vector";
 
-class Part {
+export class Part {
+    sprite;
+    parent;
+    container;
+
     constructor(spriteName, attachments, mass) {
         this.sprite;
         this.parent;
@@ -39,7 +43,7 @@ class Part {
     }
 }
 
-class FuelTank extends Part {
+export class FuelTank extends Part {
     constructor(spriteName, attachments, dryMass, wetMass, fuel) {
         super(spriteName, attachments, wetMass);
         this.dryMass = dryMass;
@@ -54,7 +58,7 @@ class FuelTank extends Part {
     }
 }
 
-class Engine extends Part {
+export class Engine extends Part {
     constructor(spriteName, attachments, mass, thrust, plumeSpriteName) {
         super(spriteName, attachments, mass);
         this.thrust = thrust;
@@ -73,13 +77,13 @@ class Engine extends Part {
 
 }
 
-class Cabin extends Part {
+export class Cabin extends Part {
     constructor(spriteName, attachments, mass) {
         super(spriteName, attachments, mass);
     }
 }
 
-class Rocket {
+export class Rocket {
     constructor(x, y, width, height) {
         this.container = new Container();
         this.width = width;
