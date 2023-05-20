@@ -648,7 +648,8 @@ const drag = 0.02,
 
 var vab, spaceShip, ghost, mouseGrid;
 
-var id;
+var id, world, launchpad, map, trajectoryLine, kerb, fullOrbit;
+var currentAngle, looped, playerDistance, lastDistance, apoapsis, apoapsisDistance, periapsis, periapsisDistance;
 
 var line,
     apoapsisIcon,
@@ -745,7 +746,7 @@ function setup() {
     // --- World Elements --- //
 
     // World Container
-    let world = new Container();
+    world = new Container();
     app.stage.addChild(world);
 
     // Planet
@@ -760,7 +761,7 @@ function setup() {
     planet.radius = planet.width / 2;
 
     // Launchpad
-    let launchpad = new Sprite(resources["assets/Launchpad Mockup.png"].texture);
+    launchpad = new Sprite(resources["assets/Launchpad Mockup.png"].texture);
     launchpad.anchor.set(0.375, 1);
     launchpad.y = -637100;
     launchpad.scale.set(0.25);
@@ -769,11 +770,11 @@ function setup() {
     // --- Map --- //
 
     // Map Overlay
-    let map = new Container();
+    map = new Container();
     world.addChild(map);
 
     // Trajectory Line
-    let trajectoryLine = new Line([200, 10, 0, 0], 2, "0xffffff");
+    trajectoryLine = new Line([200, 10, 0, 0], 2, "0xffffff");
     map.addChild(trajectoryLine);
 
     // Apoapsis
@@ -847,7 +848,7 @@ function setup() {
     heading.position.set(190, 180);
 
     // Kerb
-    let kerb = new Sprite(id["Space Tilesheet 22.aseprite"]);
+    kerb = new Sprite(id["Space Tilesheet 22.aseprite"]);
     kerb.anchor.set(0, 1);
     kerb.position.set(10, window.innerHeight - 10);
     kerb.scale.set(8);
