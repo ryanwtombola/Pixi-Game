@@ -1,6 +1,5 @@
-import { Vector } from "./vector";
 
-export class Part {
+class Part {
     sprite;
     parent;
     container;
@@ -43,7 +42,7 @@ export class Part {
     }
 }
 
-export class FuelTank extends Part {
+class FuelTank extends Part {
     constructor(spriteName, attachments, dryMass, wetMass, fuel) {
         super(spriteName, attachments, wetMass);
         this.dryMass = dryMass;
@@ -58,7 +57,7 @@ export class FuelTank extends Part {
     }
 }
 
-export class Engine extends Part {
+class Engine extends Part {
     constructor(spriteName, attachments, mass, thrust, plumeSpriteName) {
         super(spriteName, attachments, mass);
         this.thrust = thrust;
@@ -77,13 +76,13 @@ export class Engine extends Part {
 
 }
 
-export class Cabin extends Part {
+class Cabin extends Part {
     constructor(spriteName, attachments, mass) {
         super(spriteName, attachments, mass);
     }
 }
 
-export class Rocket {
+class Rocket {
     constructor(x, y, width, height) {
         this.container = new Container();
         this.width = width;

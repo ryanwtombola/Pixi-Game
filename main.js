@@ -1,8 +1,5 @@
-import { keyboard } from "./functions.js"
 import * as PIXI from "pixi.js"
-import { Line } from "./classes/line.js"
-import { Rocket, Cabin, FuelTank, Engine } from "./classes/rocket.js"
-import { Vector } from "./classes/vector.js"
+
 
 // -----------------------------------------------======== PIXI ========----------------------------------------------- //
 
@@ -11,7 +8,8 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 // Aliases
 let Application = PIXI.Application,
-    resources = PIXI.loader.resources,
+    loader = PIXI.Loader.shared,
+    resources = loader.resources,
     Sprite = PIXI.Sprite,
     Text = PIXI.Text,
     TextStyle = PIXI.TextStyle,
@@ -39,7 +37,7 @@ app.renderer.autoResize = true;
 app.renderer.resize(window.innerWidth, window.innerHeight);
 
 // Load an image and run the setup function when it's done
-PIXI.loader
+loader
     .add("assets/space-spritesheet.json")
     .add("assets/Launchpad Mockup.png")
     .add("assets/VAB.png")
@@ -184,7 +182,7 @@ function setup() {
     // --- World Elements --- //
 
     // World Container
-    world = new Container();
+    let world = new Container();
     app.stage.addChild(world);
 
     // Planet
@@ -208,11 +206,11 @@ function setup() {
     // --- Map --- //
 
     // Map Overlay
-    map = new Container();
+    let map = new Container();
     world.addChild(map);
 
     // Trajectory Line
-    trajectoryLine = new Line([200, 10, 0, 0], 2, "0xffffff");
+    let trajectoryLine = new Line([200, 10, 0, 0], 2, "0xffffff");
     map.addChild(trajectoryLine);
 
     // Apoapsis
@@ -286,7 +284,7 @@ function setup() {
     heading.position.set(190, 180);
 
     // Kerb
-    kerb = new Sprite(id["Space Tilesheet 22.aseprite"]);
+    let kerb = new Sprite(id["Space Tilesheet 22.aseprite"]);
     kerb.anchor.set(0, 1);
     kerb.position.set(10, window.innerHeight - 10);
     kerb.scale.set(8);

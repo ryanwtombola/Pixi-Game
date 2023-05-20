@@ -1,4 +1,4 @@
-export class Vector {
+class Vector {
     static zero = new Vector(0, 0);
     static one = new Vector(1, 1);
     static half = new Vector(0.5, 0.5);
