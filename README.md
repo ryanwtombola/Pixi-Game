@@ -9,9 +9,10 @@ Tested on Linux and MacOS.
 Windows / WSL2 may work but is untested.
 
 ### Install Nix
-Install Nix using the [Determinate Installer](https://github.com/DeterminateSystems/nix-installer) using the command below.
+Install Nix using the [Determinate Installer](https://github.com/DeterminateSystems/nix-installer) using the command below and refresh your shell.
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+exec $SHELL
 ```
 Alternatively you can install Nix from the [official website](https://nixos.org/download.html) and enable [nix-command and flakes](https://nixos.wiki/wiki/Flakes) manually.
 
