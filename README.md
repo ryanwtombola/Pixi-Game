@@ -9,7 +9,7 @@ Tested on Linux and MacOS.
 Windows / WSL2 may work but is untested.
 
 ### Install Nix
-Install Nix using the [Determinate Installer](https://github.com/DeterminateSystems/nix-installer) using the command below and refresh your shell.
+Install Nix using the [Determinate Installer](https://github.com/DeterminateSystems/nix-installer) and refresh your shell.
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 exec $SHELL
