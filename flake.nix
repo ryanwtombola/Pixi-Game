@@ -10,8 +10,10 @@
       in
       {
         packages.default = pkgs.writeScriptBin "run" ''
+          nix develop --command bash -c '
           npm i
           npm run serve
+          '
         '';
 
         devShells.default = pkgs.mkShell {
