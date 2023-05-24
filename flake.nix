@@ -10,7 +10,7 @@
       in
       {
         packages.default = pkgs.writeScriptBin "run" ''
-          nix develop --command bash -c '
+          nix develop "github:ryanwtombola/Pixi-Game" --command bash -c '
           npm i
           npm run serve
           '
