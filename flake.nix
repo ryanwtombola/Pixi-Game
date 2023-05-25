@@ -2,8 +2,9 @@
   description = "kerbz";
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
+    project-src.url = "github:ryanwtombola/Pixi-Game";
   };
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, project-src }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
@@ -11,7 +12,7 @@
       {
         packages.default = pkgs.writeShellApplication {
           name = "kerbz";
-          runtimeInputs = with pkgs; [ nodejs ];
+          runtimeInputs = [ pkgs.nodejs  project-src ];
           text = ''
             npm i
             npm run serve
