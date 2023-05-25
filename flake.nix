@@ -9,12 +9,14 @@
         pkgs = import nixpkgs { inherit system; };
       in
       {
-        packages.default = pkgs.writeScriptBin "run" ''
-          nix develop "github:ryanwtombola/Pixi-Game" --command bash -c '
-          npm i
-          npm run serve
-          '
-        '';
+        packages.default = pkgs.writeShellApplication {
+          name = "kerbz";
+          runtimeInputs = with pkgs; [ nodejs ];
+          text = ''
+            npm i
+            npm run serve
+          '';
+        };
 
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
