@@ -17,16 +17,11 @@ exec $SHELL
 Alternatively you can install Nix from the [official website](https://nixos.org/download.html) and enable [nix-command and flakes](https://nixos.wiki/wiki/Flakes) manually.
 
 ### Building with Nix
-Clone and enter the repo then use `nix develop` to enter an environment with all the required dependencies.
+Clone and enter the repo then `nix run` to serve the project
 ```bash
 git clone https://github.com/ryanwtombola/Pixi-Game
 cd Pixi-Game
-nix develop -c $SHELL
-```
-You should now have npm available to build with
-```bash
-npm i
-npm run serve
+nix run
 ```
 
 ### Building without Nix
