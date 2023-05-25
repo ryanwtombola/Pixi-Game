@@ -2,27 +2,14 @@
   description = "kerbz";
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
+    dream2nix.url = "github:nix-community/dream2nix";
   };
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-      in
-      {
-        packages.default = pkgs.writeShellApplication {
-          name = "kerbz";
-          runtimeInputs = with pkgs; [ nodejs ];
-          text = ''
-            npm i
-            npm run serve
-          '';
-        };
-
-        devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            nodejs
-          ];
-        };
-      }
-    );
+  outputs = { self, nixpkgs, flake-utils, dream2nix }:
+    dream2nix.lib.makeFlakeOutputs {
+      systems = flake-utils.lib.defaultSystems;
+      # systems = [ "x86_64-darwin" ];
+      config.projectRoot = ./.;
+      source = ./.;
+      projects = ./projects.toml;
+    };
 }
